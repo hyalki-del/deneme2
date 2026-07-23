@@ -4,56 +4,75 @@ import sys
 import html
 import requests
 
-def is_tab_object(obj):
+def is_tab_item(obj):
     """
-    Checks if a dictionary represents a tab or contains a nested tab object.
+    Evaluates whether a dictionary represents a tab entry or wraps one.
     """
     if not isinstance(obj, dict):
         return False
     
-    # Check if 'tab' is a nested dictionary inside the item wrapper
+    # Check if data is nested inside obj['tab']
     target = obj.get('tab') if isinstance(obj.get('tab'), dict) else obj
     
-    # Core identifying attributes of an Ultimate Guitar tab entry
-    has_title = any(k in target for k in ['song_name', 'songName', 'song_title', 'title'])
-    has_url = any(k in target for k in ['tab_url', 'tabUrl', 'url', 'web_url'])
-    has_artist = any(k in target for k in ['artist_name', 'artistName', 'artist_title'])
+    # Check for core UG tab identifier keys
+    tab_keys = {'song_name', 'songName', 'song_title', 'tab_url', 'tabUrl', 'artist_name', 'artistName', 'song_id', 'tab_id'}
+    return any(k in target for k in tab_keys)
+
+def find_tab_array(data):
+    """
+    Attempts direct schema navigation first, then falls back to recursive tree search.
+    """
+    if not isinstance(data, dict):
+        return []
+
+    # 1. Direct path navigation for standard UG page stores
+    page_data = data.get('store', {}).get('page', {}).get('data', {})
     
-    return (has_title and has_url) or (has_title and has_artist)
+    if isinstance(page_data, dict):
+        # Known UG tab container keys
+        candidate_containers = [
+            page_data.get('playlist'),
+            page_data.get('tabs'),
+            page_data.get('list'),
+            page_data.get('items'),
+            page_data.get('page_data', {}).get('playlist') if isinstance(page_data.get('page_data'), dict) else None,
+            page_data.get('plugin_data', {}).get('playlist') if isinstance(page_data.get('plugin_data'), dict) else None,
+        ]
 
-def find_all_tab_arrays(data):
-    """
-    Recursively explores every node in the JSON tree and returns 
-    the first array where items represent valid tab objects.
-    """
-    if isinstance(data, dict):
-        # 1. Check all lists directly attached to this dictionary
-        for key, value in data.items():
-            if isinstance(value, list) and len(value) > 0:
-                # Test first few items to confirm it's a tab list
-                if any(is_tab_object(item) for item in value[:3]):
-                    return value
-        
-        # 2. Recurse deeper into nested dictionaries
-        for key, value in data.items():
-            result = find_all_tab_arrays(value)
-            if result:
-                return result
+        for container in candidate_containers:
+            if isinstance(container, list) and len(container) > 0 and is_tab_item(container[0]):
+                return container
+            elif isinstance(container, dict):
+                for sub_key in ['tabs', 'items', 'list', 'songs']:
+                    sub_list = container.get(sub_key)
+                    if isinstance(sub_list, list) and len(sub_list) > 0 and is_tab_item(sub_list[0]):
+                        return sub_list
 
-    elif isinstance(data, list):
-        # If we encounter a list of lists/dicts, recurse into items
-        for item in data:
-            result = find_all_tab_arrays(item)
-            if result:
-                return result
+    # 2. Fallback: Recursive search through the entire JSON object
+    def recursive_search(node):
+        if isinstance(node, dict):
+            for k, v in node.items():
+                if isinstance(v, list) and len(v) > 0:
+                    if any(is_tab_item(item) for item in v[:5]):
+                        return v
+            for k, v in node.items():
+                res = recursive_search(v)
+                if res:
+                    return res
+        elif isinstance(node, list):
+            for item in node:
+                res = recursive_search(item)
+                if res:
+                    return res
+        return []
 
-    return []
+    return recursive_search(data)
 
 def parse_ug_json_payload(page_html):
     """
-    Extracts and parses UG's embedded JSON payload using multi-fallback strategy.
+    Extracts embedded JSON state payload from UG HTML source.
     """
-    # Strategy 1: Search for class="js-store" data-content="..."
+    # Strategy 1: js-store data-content
     js_store_match = re.search(r'class=["\']js-store["\'][^>]*data-content=["\'](.*?)["\']', page_html, re.DOTALL)
     if not js_store_match:
         js_store_match = re.search(r'data-content=["\'](.*?)["\'][^>]*class=["\']js-store["\']', page_html, re.DOTALL)
@@ -67,7 +86,7 @@ def parse_ug_json_payload(page_html):
         except Exception as e:
             print(f"⚠️ Failed parsing 'js-store' payload: {e}", flush=True)
 
-    # Strategy 2: Search for <script id="__NEXT_DATA__">
+    # Strategy 2: __NEXT_DATA__
     next_data_match = re.search(r'<script id="__NEXT_DATA__" type="application/json">(.*?)</script>', page_html, re.DOTALL)
     if next_data_match:
         try:
@@ -77,7 +96,7 @@ def parse_ug_json_payload(page_html):
         except Exception as e:
             print(f"⚠️ Failed parsing __NEXT_DATA__ block: {e}", flush=True)
 
-    # Strategy 3: Search for window.UGAPP or window.__Store__
+    # Strategy 3: window state variables
     win_store_match = re.search(r'window\.(?:UGAPP|__Store__|store)\s*=\s*(\{.*?\});\s*</script>', page_html, re.DOTALL)
     if win_store_match:
         try:
@@ -135,12 +154,19 @@ def fetch_ug_data():
     payload = parse_ug_json_payload(page_html)
 
     if payload:
-        raw_tabs = find_all_tab_arrays(payload)
+        raw_tabs = find_tab_array(payload)
+        
+        # Diagnostic logging if no tabs match
+        if not raw_tabs:
+            print("⚠️ Diagnostic: 0 items matched finder. Inspecting store.page.data structure...", flush=True)
+            page_data = payload.get('store', {}).get('page', {}).get('data', {})
+            if isinstance(page_data, dict):
+                print(f"ℹ️ Keys found in store.page.data: {list(page_data.keys())}", flush=True)
+
         print(f"🔍 Extracted {len(raw_tabs)} raw tab entries from payload tree.", flush=True)
 
         for idx, item in enumerate(raw_tabs):
             if isinstance(item, dict):
-                # Handle wrapper objects where tab info lives under item['tab']
                 tab_data = item.get('tab') if isinstance(item.get('tab'), dict) else item
                 
                 song_title = (
