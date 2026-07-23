@@ -26,10 +26,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests beautifulsoup4
 
-      - name: Execute Scraper
+      - name: Execute Scraper Pipeline
         env:
           PYTHONUNBUFFERED: "1"
-          GOOGLE_SHEETS_URL: ${{ secrets.GOOGLE_SHEETS_URL }}
         run: python scripts/fetch_ug_playlist.py
 
       - name: Commit and Push Updated Playlist
@@ -37,14 +36,13 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           
-          [ -f config.json ] || echo "{}" > config.json
           [ -f playlist.json ] || echo "[]" > playlist.json
           
-          git add config.json playlist.json
+          git add playlist.json config.json
           
           if ! git diff --staged --quiet; then
-            git commit -m "build(cron): auto-sync Ultimate Guitar playlist"
+            git commit -m "build(cron): auto-sync playlist.json"
             git push
           else
-            echo "No changes detected in playlist.json. Skipping commit."
+            echo "No changes detected. Skipping commit."
           fi
