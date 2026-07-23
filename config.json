@@ -1,10 +1,12 @@
 {
-  "bandName": "babb",
+  "bandName": "babba",
   "bandMembers": [
     "hasan",
     "Serkan"
   ],
   "googleSheetsDeployUrl": "https://script.google.com/macros/s/AKfycbwc0btPHecEd95CSOtVZfWdodTGnO1fD6kS2edf8zw4Uj5_P5bCd-5FhznwiHt6oESEgA/exec",
   "ugPlaylistUrl": "https://www.ultimate-guitar.com/user/playlist/shared?h=N4oafAvw08YnD1Pep-gUFb1r",
-  "generatedAt": "2026-07-23T19:58:11.695Z"
+  "generatedAt": "2026-07-23T19:58:11.695Z",
+  "bandPhotos": [],
+  "lastUpdated": "2026-07-23T19:13:06.290Z"
 }
