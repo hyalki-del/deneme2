@@ -1,23 +1,26 @@
 import json
 import re
 import sys
+import html
 import requests
 
 def extract_tabs_recursively(data):
     """
-    Recursively searches the Next.js payload tree to find 
+    Recursively searches the JSON object tree to find 
     the list of tabs regardless of UG's page schema variations.
     """
     if isinstance(data, dict):
-        # Look for typical playlist/tab keys in UG's JSON payload
-        for key in ['tabs', 'playlist', 'user_playlist', 'tabs_list']:
-            if key in data and isinstance(data[key], list) and len(data[key]) > 0:
-                first_item = data[key][0]
-                if isinstance(first_item, dict) and ('song_name' in first_item or 'songName' in first_item or 'tab_url' in first_item):
-                    return data[key]
-                elif isinstance(first_item, dict) and 'tabs' in first_item:
-                    return extract_tabs_recursively(first_item)
-        
+        # Check standard playlist/tab keys in UG JSON schemas
+        for key in ['tabs', 'playlist', 'user_playlist', 'tabs_list', 'songbook']:
+            if key in data:
+                val = data[key]
+                if isinstance(val, list) and len(val) > 0:
+                    first_item = val[0]
+                    if isinstance(first_item, dict) and ('song_name' in first_item or 'songName' in first_item or 'tab_url' in first_item or 'tab' in first_item):
+                        return val
+                elif isinstance(val, dict) and 'tabs' in val:
+                    return extract_tabs_recursively(val['tabs'])
+
         # Recurse through dictionary values
         for k, v in data.items():
             result = extract_tabs_recursively(v)
@@ -32,6 +35,48 @@ def extract_tabs_recursively(data):
 
     return []
 
+def parse_ug_json_payload(page_html):
+    """
+    Extracts and parses UG's embedded JSON payload using 3 fallback strategies.
+    """
+    # Strategy 1: Search for class="js-store" data-content="..."
+    js_store_match = re.search(r'class=["\']js-store["\'][^>]*data-content=["\'](.*?)["\']', page_html, re.DOTALL)
+    if not js_store_match:
+        # Alt regex order (data-content before class)
+        js_store_match = re.search(r'data-content=["\'](.*?)["\'][^>]*class=["\']js-store["\']', page_html, re.DOTALL)
+
+    if js_store_match:
+        try:
+            raw_json = html.unescape(js_store_match.group(1))
+            data = json.loads(raw_json)
+            print("✅ Successfully extracted JSON from 'js-store' data-content element.", flush=True)
+            return data
+        except Exception as e:
+            print(f"⚠️ Failed parsing 'js-store' payload: {e}", flush=True)
+
+    # Strategy 2: Search for <script id="__NEXT_DATA__">
+    next_data_match = re.search(r'<script id="__NEXT_DATA__" type="application/json">(.*?)</script>', page_html, re.DOTALL)
+    if next_data_match:
+        try:
+            data = json.loads(next_data_match.group(1))
+            print("✅ Successfully extracted JSON from __NEXT_DATA__ script block.", flush=True)
+            return data
+        except Exception as e:
+            print(f"⚠️ Failed parsing __NEXT_DATA__ block: {e}", flush=True)
+
+    # Strategy 3: Search for window.UGAPP = ... or window.__Store__ = ...
+    win_store_match = re.search(r'window\.(?:UGAPP|__Store__|store)\s*=\s*(\{.*?\});\s*</script>', page_html, re.DOTALL)
+    if win_store_match:
+        try:
+            data = json.loads(win_store_match.group(1))
+            print("✅ Successfully extracted JSON from window state variable.", flush=True)
+            return data
+        except Exception as e:
+            print(f"⚠️ Failed parsing window state block: {e}", flush=True)
+
+    print("❌ All JSON extraction strategies failed to find embedded payload.", flush=True)
+    return None
+
 def fetch_ug_data():
     print("🚀 --- Starting Ultimate Guitar Sync Pipeline ---", flush=True)
 
@@ -42,14 +87,12 @@ def fetch_ug_data():
             print("📄 Successfully read root config.json", flush=True)
     except Exception as e:
         print(f"❌ CRITICAL ERROR: Could not read config.json in root folder: {e}", flush=True)
-        print("👉 Ensure admin.html was used to generate config.json and it is in the repository root.", flush=True)
         with open('playlist.json', 'w') as f:
             json.dump([], f)
         sys.exit(1)
 
     ug_url = config.get('ugPlaylistUrl', '').strip()
 
-    # 2. Validate URL presence
     if not ug_url or not ug_url.startswith("http"):
         print("❌ CRITICAL ERROR: 'ugPlaylistUrl' is empty or invalid in config.json.", flush=True)
         with open('playlist.json', 'w') as f:
@@ -58,7 +101,7 @@ def fetch_ug_data():
 
     print(f"🎸 Fetching Ultimate Guitar tracks from: {ug_url}", flush=True)
 
-    # 3. Request Ultimate Guitar Page Source
+    # 2. Fetch HTML source from Ultimate Guitar
     headers = {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -67,42 +110,40 @@ def fetch_ug_data():
 
     try:
         resp = requests.get(ug_url, headers=headers, timeout=15)
-        html = resp.text
-        print(f"📄 Downloaded page source ({len(html)} bytes). Extracting playlist data...", flush=True)
+        page_html = resp.text
+        print(f"📄 Downloaded page source ({len(page_html)} bytes). Parsing...", flush=True)
     except Exception as e:
         print(f"❌ HTTP Fetch Error from Ultimate Guitar: {e}", flush=True)
         sys.exit(1)
 
     songs = []
 
-    # 4. Extract __NEXT_DATA__ script block and parse tabs
-    next_match = re.search(r'<script id="__NEXT_DATA__" type="application/json">(.*?)</script>', html, re.DOTALL)
-    if next_match:
-        try:
-            data = json.loads(next_match.group(1))
-            tabs = extract_tabs_recursively(data)
-            print(f"🔍 Deep Search extracted {len(tabs)} tabs from Next.js payload.", flush=True)
+    # 3. Parse JSON store using fallbacks
+    payload = parse_ug_json_payload(page_html)
 
-            for idx, tab in enumerate(tabs):
-                if isinstance(tab, dict):
-                    song_title = tab.get('song_name') or tab.get('songName') or tab.get('song_title') or 'Unknown Title'
-                    artist_name = tab.get('artist_name') or tab.get('artistName') or 'Unknown Artist'
-                    key_val = tab.get('tonality_name') or tab.get('tonalityName') or tab.get('key') or ''
-                    tab_url = tab.get('tab_url') or tab.get('tabUrl') or ''
+    if payload:
+        raw_tabs = extract_tabs_recursively(payload)
+        print(f"🔍 Extracted {len(raw_tabs)} raw tab entries from payload.", flush=True)
 
-                    songs.append({
-                        "id": idx + 1,
-                        "title": song_title,
-                        "artist": artist_name,
-                        "key": key_val,
-                        "ugUrl": tab_url
-                    })
-        except Exception as err:
-            print(f"⚠️ Error parsing Next.js JSON tree: {err}", flush=True)
-    else:
-        print("⚠️ Warning: Could not locate __NEXT_DATA__ script block in page HTML.", flush=True)
+        for idx, item in enumerate(raw_tabs):
+            if isinstance(item, dict):
+                # Handle nested item['tab'] structure or direct tab dict
+                tab_data = item.get('tab', item)
+                
+                song_title = tab_data.get('song_name') or tab_data.get('songName') or tab_data.get('song_title') or 'Unknown Title'
+                artist_name = tab_data.get('artist_name') or tab_data.get('artistName') or 'Unknown Artist'
+                key_val = tab_data.get('tonality_name') or tab_data.get('tonalityName') or tab_data.get('key') or ''
+                tab_url = tab_data.get('tab_url') or tab_data.get('tabUrl') or ''
 
-    # 5. Output result strictly to playlist.json
+                songs.append({
+                    "id": idx + 1,
+                    "title": song_title,
+                    "artist": artist_name,
+                    "key": key_val,
+                    "ugUrl": tab_url
+                })
+
+    # 4. Save result
     with open('playlist.json', 'w') as f:
         json.dump(songs, f, indent=2)
 
