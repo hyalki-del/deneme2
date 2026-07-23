@@ -1,8 +1,0 @@
-{
-  "status": "success",
-  "data": [
-    { "id": "1", "title": "Master of Puppets", "artist": "Metallica", "musicalKey": "E", "orderIndex": 1 },
-    { "id": "2", "title": "Hotel California", "artist": "Eagles", "musicalKey": "Bm", "orderIndex": 2 },
-    { "id": "3", "title": "Comfortably Numb", "artist": "Pink Floyd", "musicalKey": "Bm", "orderIndex": 3 }
-  ]
-}
