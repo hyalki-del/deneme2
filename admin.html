@@ -3,42 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Band Admin Setup</title>
+  <title>Band Configuration Generator</title>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 40px auto; max-width: 600px; padding: 0 20px; line-height: 1.6; }
     h1 { border-bottom: 2px solid #333; padding-bottom: 10px; }
     .form-group { margin-bottom: 20px; }
     label { font-weight: bold; display: block; margin-bottom: 5px; }
-    input[type="text"], input[type="url"], input[type="password"] { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+    input[type="text"], input[type="url"] { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
     button { background-color: #0066cc; color: white; padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: bold; width: 100%; }
     button:hover { background-color: #0052a3; }
-    #statusMessage { margin-top: 20px; padding: 12px; border-radius: 4px; font-weight: bold; }
-    .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-    .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    #downloadSection { margin-top: 25px; padding: 15px; background-color: #e9ecef; border-radius: 6px; display: none; }
+    .download-btn { display: inline-block; text-align: center; background-color: #28a745; color: white; text-decoration: none; padding: 12px 20px; border-radius: 4px; font-weight: bold; width: 93%; }
+    .download-btn:hover { background-color: #218838; }
   </style>
 </head>
 <body>
 
-  <h1>🎸 Band Admin Configuration</h1>
-  <p>Fill out the fields below to update <code>config.json</code> in your GitHub repository root.</p>
+  <h1>🎸 Band Config Generator</h1>
+  <p>Fill out your details below to generate your repository's <code>config.json</code> file.</p>
 
   <form id="adminForm">
-    <div class="form-group">
-      <label for="githubToken">GitHub Personal Access Token (PAT):</label>
-      <input type="password" id="githubToken" required placeholder="github_pat_11A...">
-      <small style="color: #666;">Requires <code>repo</code> or <code>contents:write</code> scope to update config.json.</small>
-    </div>
-
-    <div class="form-group">
-      <label for="repoOwner">GitHub Username / Org Owner:</label>
-      <input type="text" id="repoOwner" required placeholder="e.g. my-username">
-    </div>
-
-    <div class="form-group">
-      <label for="repoName">Repository Name:</label>
-      <input type="text" id="repoName" required placeholder="e.g. my-band-app">
-    </div>
-
     <div class="form-group">
       <label for="bandName">Band Name:</label>
       <input type="text" id="bandName" required placeholder="e.g. The Midnight Echoes">
@@ -51,7 +35,7 @@
 
     <div class="form-group">
       <label for="googleSheetsDeployUrl">Google Sheets Web App URL:</label>
-      <input type="url" id="googleSheetsDeployUrl" placeholder="https://script.google.com/macros/s/.../exec">
+      <input type="url" id="googleSheetsDeployUrl" required placeholder="https://script.google.com/macros/s/.../exec">
     </div>
 
     <div class="form-group">
@@ -59,10 +43,14 @@
       <input type="url" id="ugPlaylistUrl" required placeholder="https://www.ultimate-guitar.com/user/playlist/...">
     </div>
 
-    <button type="submit" id="submitBtn">Save Directly to config.json</button>
+    <button type="submit">Build config.json</button>
   </form>
 
-  <div id="statusMessage" style="display: none;"></div>
+  <div id="downloadSection">
+    <p><strong>Config generated successfully!</strong></p>
+    <p>Click below to download your <code>config.json</code> file and place it into your project's root folder:</p>
+    <a id="downloadBtn" class="download-btn" download="config.json">📥 Download config.json</a>
+  </div>
 
   <script src="js/admin.js"></script>
 </body>
