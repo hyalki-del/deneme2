@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0a0c">
+  <title>Schedule — Band Availability</title>
+
+  <!-- Typography & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Oswald:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Shared Design Engine -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <style>
+    .calendar-container {
+      max-width: 1000px;
+      margin: 120px auto 60px auto;
+      padding: 0 24px;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .page-title {
+      font-family: var(--font-display);
+      font-size: 2.5rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .grid-layout {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 850px) {
+      .grid-layout { grid-template-columns: 1fr; }
+    }
+
+    .panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border-dark);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      backdrop-filter: blur(8px);
+    }
+
+    .panel h2 {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      color: var(--text-main);
+      border-bottom: 1px solid var(--border-dark);
+      padding-bottom: 8px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 12px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-dark);
+      border-radius: var(--radius-sm);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--accent-red);
+    }
+
+    /* Event Matrix Cards */
+    .event-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      list-style: none;
+    }
+
+    .event-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-dark);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: border-color var(--transition-fast);
+    }
+
+    .event-card.busy { border-left: 4px solid var(--accent-red); }
+    .event-card.free-all { border-left: 4px solid #00ffcc; background: rgba(0, 255, 204, 0.05); }
+    .event-card.proposal { border-left: 4px solid #00bbff; }
+
+    .event-info h4 { font-size: 1rem; color: var(--text-main); }
+    .event-info p { font-size: 0.85rem; color: var(--text-muted); }
+
+    .status-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .badge-busy { background: rgba(211, 16, 16, 0.2); color: var(--accent-red); }
+    .badge-free { background: rgba(0, 255, 204, 0.2); color: #00ffcc; }
+    .badge-proposal { background: rgba(0, 187, 255, 0.2); color: #00bbff; }
+  </style>
+</head>
+<body class="no-select">
+
+  <!-- Navigation Bar -->
+  <header>
+    <nav class="navbar">
+      <a href="index.html" class="brand-logo" id="navLogo">BR</a>
+      <ul class="nav-links">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="playlist.html">Repertoire</a></li>
+        <li><a href="calendar.html" class="active">Schedule</a></li>
+        <li><a href="admin.html">Members</a></li>
+        <li><a href="fan.html">Encore Game</a></li>
+      </ul>
+      <a href="rehearsal.html" class="btn-sign-in">SHOW MODE</a>
+    </nav>
+  </header>
+
+  <!-- Calendar Workspace -->
+  <main class="calendar-container">
+    
+    <div class="page-header">
+      <h1 class="page-title">AVAILABILITY MATRIX</h1>
+    </div>
+
+    <div class="grid-layout">
+      
+      <!-- Input Panel: Mark Availability -->
+      <section class="panel">
+        <h2>MARK SCHEDULE</h2>
+        <form id="availabilityForm" onsubmit="handleFormSubmit(event)">
+          
+          <div class="form-group">
+            <label for="memberName">Band Member</label>
+            <select id="memberName" class="form-control" required>
+              <!-- Dynamic options populated from config -->
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="eventDate">Select Date</label>
+            <input type="date" id="eventDate" class="form-control" required>
+          </div>
+
+          <div class="form-group">
+            <label for="statusType">Status</label>
+            <select id="statusType" class="form-control" required>
+              <option value="BUSY">BUSY (Unavailable)</option>
+              <option value="FREE">FREE (Available)</option>
+              <option value="REHEARSAL_PROPOSAL">REHEARSAL PROPOSAL</option>
+              <option value="SHOW_PROPOSAL">SHOW PROPOSAL</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="notes">Notes / Venue Details</label>
+            <input type="text" id="notes" class="form-control" placeholder="e.g. Out of town, or Gig at Rock Cafe">
+          </div>
+
+          <button type="submit" class="btn-primary" style="width: 100%;">
+            <i class="fa-solid fa-floppy-disk" style="margin-right: 8px;"></i> SAVE TO SCHEDULE
+          </button>
+        </form>
+      </section>
+
+      <!-- Matrix Display Panel -->
+      <section class="panel">
+        <h2>SCHEDULE MATRIX</h2>
+        <ul id="scheduleList" class="event-list">
+          <!-- Dynamically populated -->
+        </ul>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- JS Dependencies -->
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+
+  <script>
+    let calendarState = [];
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      populateMemberDropdown();
+      await loadCalendar();
+    });
+
+    function populateMemberDropdown() {
+      const dropdown = document.getElementById('memberName');
+      dropdown.innerHTML = '';
+      
+      const members = (typeof BAND_CONFIG !== 'undefined' && BAND_CONFIG.members) 
+        ? BAND_CONFIG.members 
+        : ["Vocals", "Guitar 1", "Guitar 2", "Bass", "Drums"];
+
+      members.forEach(member => {
+        const opt = document.createElement('option');
+        opt.value = member;
+        opt.textContent = member;
+        dropdown.appendChild(opt);
+      });
+
+      // Add "ALL" option for proposals
+      const optAll = document.createElement('option');
+      optAll.value = "ALL";
+      optAll.textContent = "ALL MEMBERS (Proposal)";
+      dropdown.appendChild(optAll);
+    }
+
+    async function loadCalendar() {
+      const listEl = document.getElementById('scheduleList');
+      listEl.innerHTML = '<li style="color:var(--text-muted); text-align:center; padding:40px;">Loading schedule matrix...</li>';
+
+      try {
+        if (!BAND_CONFIG.googleScriptUrl) {
+          // Fallback testing data
+          calendarState = [
+            { date: "2026-08-10", memberName: "Guitar 1", status: "BUSY", proposalNote: "Out of town" },
+            { date: "2026-08-15", memberName: "ALL", status: "REHEARSAL_PROPOSAL", proposalNote: "Studio B rehearsal" }
+          ];
+        } else {
+          const res = await fetch(`${BAND_CONFIG.googleScriptUrl}?action=getCalendar`);
+          const json = await res.json();
+          calendarState = json.data || [];
+        }
+        renderSchedule();
+      } catch (err) {
+        listEl.innerHTML = '<li style="color:var(--accent-red); text-align:center; padding:40px;">Failed to load calendar events.</li>';
+      }
+    }
+
+    function renderSchedule() {
+      const listEl = document.getElementById('scheduleList');
+      listEl.innerHTML = '';
+
+      if (calendarState.length === 0) {
+        listEl.innerHTML = '<li style="color:var(--text-muted); text-align:center; padding:20px;">No schedule entries recorded yet.</li>';
+        return;
+      }
+
+      calendarState.forEach(evt => {
+        const li = document.createElement('li');
+        
+        let cardClass = "event-card";
+        let badgeClass = "badge-busy";
+        
+        if (evt.status === 'BUSY') {
+          cardClass += " busy";
+          badgeClass = "badge-busy";
+        } else if (evt.status.includes('PROPOSAL')) {
+          cardClass += " proposal";
+          badgeClass = "badge-proposal";
+        } else {
+          cardClass += " free-all";
+          badgeClass = "badge-free";
+        }
+
+        li.className = cardClass;
+        li.innerHTML = `
+          <div class="event-info">
+            <h4>${evt.date} — ${evt.memberName}</h4>
+            <p>${evt.proposalNote || 'No additional notes'}</p>
+          </div>
+          <span class="status-badge ${badgeClass}">${evt.status.replace('_', ' ')}</span>
+        `;
+        listEl.appendChild(li);
+      });
+    }
+
+    async function handleFormSubmit(e) {
+      e.preventDefault();
+      
+      const payload = {
+        action: 'setCalendarDate',
+        memberName: document.getElementById('memberName').value,
+        date: document.getElementById('eventDate').value,
+        status: document.getElementById('statusType').value,
+        proposalNote: document.getElementById('notes').value
+      };
+
+      calendarState.push({
+        date: payload.date,
+        memberName: payload.memberName,
+        status: payload.status,
+        proposalNote: payload.proposalNote
+      });
+
+      renderSchedule();
+
+      if (BAND_CONFIG.googleScriptUrl) {
+        await fetch(BAND_CONFIG.googleScriptUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+      }
+
+      document.getElementById('notes').value = '';
+      alert("Schedule updated!");
+    }
+  </script>
+</body>
+</html>
