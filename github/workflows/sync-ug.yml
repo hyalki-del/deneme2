@@ -2,9 +2,10 @@ name: Daily Ultimate Guitar Sync
 
 on:
   schedule:
-    # Runs at 00:00 UTC every day
+    # Runs automatically at 00:00 UTC every day
     - cron: '0 0 * * *'
-  workflow_dispatch: # Allows manual trigger anytime from GitHub UI
+  # Enables the manual 'Run workflow' button in GitHub Actions tab
+  workflow_dispatch:
 
 jobs:
   sync-playlist:
