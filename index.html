@@ -2,97 +2,114 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <!-- Critical Mobile Viewport Optimization for iOS, Android, macOS & Windows -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#0a0a0c">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  
-  <title>BLACK RITUAL — Operations Hub</title>
-  
-  <!-- Typography & Icons -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Oswald:wght@700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <!-- Shared Cross-Platform CSS Engine -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎸 Band Setlist Dashboard</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="no-select">
+<body>
 
-  <!-- Header Navigation -->
-  <header>
-    <nav class="navbar" aria-label="Main Navigation">
-      <a href="index.html" class="brand-logo" id="navLogo">BR</a>
-      
-      <ul class="nav-links">
-        <li><a href="index.html" class="active">Overview</a></li>
-        <li><a href="playlist.html">Repertoire</a></li>
-        <li><a href="calendar.html">Schedule</a></li>
-        <li><a href="admin.html">Members</a></li>
-        <li><a href="fan.html">Encore Game</a></li>
-      </ul>
-
-      <a href="rehearsal.html" class="btn-sign-in">SHOW MODE</a>
-    </nav>
-  </header>
-
-  <!-- Hero Content -->
-  <main class="hero">
-    <div class="hero-content">
-      <h1 class="hero-title">
-        <span class="white" id="heroTagline1">FORGE THE SOUND.</span>
-        <span class="red" id="heroTagline2">LIVE THE MISSION.</span>
-      </h1>
-      <p class="hero-subtitle" id="heroSubtext">
-        Operations for bands who rehearse hard and perform harder.
-      </p>
-      <div class="hero-actions">
-        <a href="rehearsal.html" class="btn-primary">GET STARTED</a>
-        <a href="playlist.html" class="btn-link">EXPLORE FEATURES &rarr;</a>
+  <div class="container">
+    <header>
+      <div class="nav-links">
+        <a href="playlist.html">Playlist</a>
+        <a href="index.html" class="active">Dashboard</a>
+        <a href="admin.html">Admin Setup</a>
       </div>
+      <h1 id="bandTitle">🎸 Band Setlist</h1>
+      <div class="meta-info" id="bandMembers">Loading band info...</div>
+    </header>
+
+    <input type="text" id="searchInput" class="search-bar" placeholder="🔍 Search by song title or artist...">
+    
+    <div class="stats" id="songStats">Loading songs...</div>
+
+    <div id="songContainer" class="song-list">
+      <div class="loading">Loading repertoire from playlist.json...</div>
     </div>
+  </div>
 
-    <!-- Features Bottom Dock -->
-    <section class="features-dock" aria-label="Operations Features">
-      
-      <a href="playlist.html" class="feature-card">
-        <i class="fa-solid fa-list-ul feature-icon" aria-hidden="true"></i>
-        <div class="feature-info">
-          <h3>SETLISTS</h3>
-          <p>Organize your songs and arrangements.</p>
-        </div>
-      </a>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const songContainer = document.getElementById('songContainer');
+      const searchInput = document.getElementById('searchInput');
+      const songStats = document.getElementById('songStats');
+      const bandTitle = document.getElementById('bandTitle');
+      const bandMembers = document.getElementById('bandMembers');
 
-      <a href="calendar.html" class="feature-card">
-        <i class="fa-regular fa-calendar-days feature-icon" aria-hidden="true"></i>
-        <div class="feature-info">
-          <h3>SCHEDULE</h3>
-          <p>Plan rehearsals, gigs, and events.</p>
-        </div>
-      </a>
+      let allSongs = [];
 
-      <a href="admin.html" class="feature-card">
-        <i class="fa-solid fa-users feature-icon" aria-hidden="true"></i>
-        <div class="feature-info">
-          <h3>MEMBERS</h3>
-          <p>Manage roles and communication.</p>
-        </div>
-      </a>
+      try {
+        const [configRes, playlistRes] = await Promise.all([
+          fetch('config.json').catch(() => null),
+          fetch('playlist.json')
+        ]);
 
-      <a href="fan.html" class="feature-card">
-        <i class="fa-solid fa-fire feature-icon" aria-hidden="true"></i>
-        <div class="feature-info">
-          <h3>ENCORE VOTES</h3>
-          <p>Let fans choose live stage tracks.</p>
-        </div>
-      </a>
+        if (configRes && configRes.ok) {
+          const config = await configRes.json();
+          if (config.bandName) bandTitle.textContent = `🎸 ${config.bandName} Setlist`;
+          if (config.bandMembers && Array.isArray(config.bandMembers)) {
+            bandMembers.textContent = `Members: ${config.bandMembers.join(', ')}`;
+          }
+        } else {
+          bandMembers.textContent = 'Repertoire Dashboard';
+        }
 
-    </section>
-  </main>
+        if (!playlistRes.ok) throw new Error('Failed to load playlist.json');
+        allSongs = await playlistRes.json();
 
-  <!-- Configuration Driver -->
-  <script src="js/config.js"></script>
+        renderSongs(allSongs);
+
+      } catch (error) {
+        console.error('Initialization Error:', error);
+        songContainer.innerHTML = `<div class="error">❌ Error loading setlist data: ${error.message}<br><small>Ensure playlist.json exists in the root directory.</small></div>`;
+        songStats.textContent = '';
+      }
+
+      function renderSongs(songsToRender) {
+        if (!songsToRender || songsToRender.length === 0) {
+          songContainer.innerHTML = `<div class="empty">No songs found in repertoire.</div>`;
+          songStats.textContent = 'Showing 0 of 0 songs';
+          return;
+        }
+
+        songStats.textContent = `Showing ${songsToRender.length} of ${allSongs.length} songs`;
+
+        songContainer.innerHTML = songsToRender.map(song => `
+          <div class="song-card">
+            <div class="song-details">
+              <span class="song-id">#${song.id}</span>
+              <div class="song-text">
+                <h3>${escapeHtml(song.title)}</h3>
+                <p>${escapeHtml(song.artist)}</p>
+              </div>
+            </div>
+            <div class="song-meta">
+              ${song.key ? `<span class="song-key" title="Song Key">${escapeHtml(song.key)}</span>` : ''}
+              ${song.ugUrl ? `<a href="${escapeHtml(song.ugUrl)}" target="_blank" class="btn-primary" style="padding: 6px 14px; font-size: 0.9rem;">Tab ↗</a>` : ''}
+            </div>
+          </div>
+        `).join('');
+      }
+
+      searchInput.addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase().trim();
+        const filtered = allSongs.filter(song => 
+          song.title.toLowerCase().includes(term) || 
+          song.artist.toLowerCase().includes(term)
+        );
+        renderSongs(filtered);
+      });
+
+      function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+    });
+  </script>
 </body>
 </html>
