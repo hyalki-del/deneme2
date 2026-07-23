@@ -207,6 +207,7 @@
           card.addEventListener('dragend', () => {
             card.classList.remove('dragging');
             updateVisualIds();
+            syncArrayOrderWithDOM(); // Keep underlying array strictly aligned with DOM order
           });
         });
 
@@ -243,19 +244,30 @@
         });
       }
 
-      // Helper function to harvest current DOM order and map with updated local keys
-      function getCurrentPayloadItems() {
+      // Synchronizes the JavaScript memory array order with the live DOM order after drag/drop
+      function syncArrayOrderWithDOM() {
         const cardElements = songContainer.querySelectorAll('.song-card');
-        const items = [];
+        const newOrderedSongs = [];
         cardElements.forEach(card => {
           const title = card.getAttribute('data-title');
-          const songObj = allSongs.find(s => s.title.toLowerCase().trim() === title.toLowerCase().trim());
-          items.push({
-            title: title,
-            key: songObj ? (songObj.key || '') : ''
-          });
+          const found = allSongs.find(s => s.title.toLowerCase().trim() === title.toLowerCase().trim());
+          if (found) newOrderedSongs.push(found);
         });
-        return items;
+        // Include any items filtered out by search input so they aren't lost
+        allSongs.forEach(song => {
+          if (!newOrderedSongs.some(s => s.title.toLowerCase().trim() === song.title.toLowerCase().trim())) {
+            newOrderedSongs.push(song);
+          }
+        });
+        allSongs = newOrderedSongs.map((s, idx) => ({ ...s, id: idx + 1 }));
+      }
+
+      function getCurrentPayloadItems() {
+        syncArrayOrderWithDOM();
+        return allSongs.map(song => ({
+          title: song.title,
+          key: song.key || ''
+        }));
       }
 
       // Explicit Save Order Button Action
@@ -305,12 +317,15 @@
         editModal.style.display = 'none';
       });
 
-      // Key Edit Apply Button: Persists both the updated key AND the current DOM sort order
+      // Key Edit Apply Button: Preserves current DOM sort order and updates key atomically
       editForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!currentEditingSongTitle) return;
 
         const newKey = editKey.value.trim();
+
+        // Ensure array order matches DOM before editing key
+        syncArrayOrderWithDOM();
 
         // Update local state array with new key
         allSongs = allSongs.map(song => {
@@ -325,9 +340,8 @@
 
         if (!sheetsDeployUrl) return;
 
-        saveStatus.textContent = `⏳ Saving key & current setlist order to Google Sheets...`;
+        saveStatus.textContent = `⏳ Saving key & preserving setlist order in Google Sheets...`;
         
-        // Harvest current DOM sequence so order is never lost on key save
         const itemsToSave = getCurrentPayloadItems();
 
         try {
@@ -339,7 +353,7 @@
               items: itemsToSave
             })
           });
-          saveStatus.textContent = `✅ Key & setlist order successfully saved to Google Sheets!`;
+          saveStatus.textContent = `✅ Key updated & setlist order successfully preserved in Google Sheets!`;
           setTimeout(() => { saveStatus.textContent = ''; }, 4000);
         } catch (err) {
           console.error('Failed saving state:', err);
