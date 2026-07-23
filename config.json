@@ -1,65 +1,18 @@
-{
-  "band": {
-    "name": "Baba Rock",
-    "shortName": "BR",
-    "tagline": "FORGE THE SOUND. LIVE THE MISSION.",
-    "subtext": "Operations for bands who rehearse hard and perform harder.",
-    "copyrightYear": 2026
-  },
-  "theme": {
-    "accentColor": "#ff3300",
-    "accentGlow": "rgba(255, 51, 0, 0.4)",
-    "bgDark": "#070707",
-    "surfaceDark": "rgba(18, 18, 18, 0.85)",
-    "borderColor": "rgba(255, 255, 255, 0.1)"
-  },
-  "marqueeMessages": [
-    "BABA ROCK LIVE EXPERIENCE",
-    "STAGE REHEARSAL IN PROGRESS",
-    "NON-STOP ROCK & METAL",
-    "TAKVİMİ KONTROL ET",
-    "LET'S ROCK AND ROLL"
-  ],
-  "navigation": [
-    {
-      "id": "calendar",
-      "label": "Takvim",
-      "url": "takvim.html",
-      "icon": "fa-solid fa-calendar-days",
-      "description": "Plan rehearsals, gigs, and events."
-    },
-    {
-      "id": "playlist",
-      "label": "Playlist",
-      "url": "playlist.html",
-      "icon": "fa-solid fa-music",
-      "description": "Organize your songs and arrangements."
-    },
-    {
-      "id": "rehearsal",
-      "label": "Prova/Setlist",
-      "url": "rehearsal.html",
-      "icon": "fa-solid fa-microphone-lines",
-      "description": "Live setlist execution and chord scrolling."
-    },
-    {
-      "id": "advisor",
-      "label": "Şarkı Seçici",
-      "url": "advisor.html",
-      "icon": "fa-solid fa-dice",
-      "description": "Smart setlist generator and song recommendation."
-    }
-  ],
-  "assets": {
-    "heroImages": [
-      "https://hyalki-del.github.io/babarock/9E3DB23C-F5C1-438B-91E7-323E8FEE34AD_4_5005_c.jpeg",
-      "https://hyalki-del.github.io/babarock/b1.jpg",
-      "https://hyalki-del.github.io/babarock/b2.jpg",
-      "https://hyalki-del.github.io/babarock/b3.jpg",
-      "https://hyalki-del.github.io/babarock/b4.jpg",
-      "https://hyalki-del.github.io/babarock/b5.jpg",
-      "https://hyalki-del.github.io/babarock/b6.jpg",
-      "https://hyalki-del.github.io/babarock/b7.jpg"
-    ]
-  }
-}
+const BAND_CONFIG = {
+  bandName: "BLACK RITUAL",
+  brandInitials: "BR",
+  taglineLine1: "FORGE THE SOUND.",
+  taglineLine2: "LIVE THE MISSION.",
+  subtext: "Operations for bands who rehearse hard and perform harder.",
+  googleScriptUrl: "", // Your deployed Google Apps Script URL
+  members: ["Vocals", "Guitar 1", "Guitar 2", "Bass", "Drums"]
+};
+
+// Global Helper to inject config values into DOM
+document.addEventListener("DOMContentLoaded", () => {
+  const logoElements = document.querySelectorAll('.brand-logo');
+  logoElements.forEach(el => el.textContent = BAND_CONFIG.brandInitials);
+  
+  const bandNameElements = document.querySelectorAll('.inject-band-name');
+  bandNameElements.forEach(el => el.textContent = BAND_CONFIG.bandName);
+});
