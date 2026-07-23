@@ -6,95 +6,36 @@
   <title>🎸 Band Repertoire Setlist</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
-    .song-card {
-      cursor: grab;
-      user-select: none;
-    }
-    .song-card:active {
-      cursor: grabbing;
-    }
-    .song-card.dragging {
-      opacity: 0.4;
-      border: 2px dashed var(--accent-color);
-    }
+    .song-card { cursor: grab; user-select: none; }
+    .song-card:active { cursor: grabbing; }
+    .song-card.dragging { opacity: 0.4; border: 2px dashed var(--accent-color); }
     .btn-youtube {
-      background-color: #ff0000;
-      color: #fff;
-      padding: 6px 12px;
-      border-radius: 6px;
-      text-decoration: none;
-      font-weight: bold;
-      font-size: 0.85rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      transition: background-color 0.2s;
+      background-color: #ff0000; color: #fff; padding: 6px 12px; border-radius: 6px;
+      text-decoration: none; font-weight: bold; font-size: 0.85rem; display: inline-flex;
+      align-items: center; gap: 5px; transition: background-color 0.2s;
     }
-    .btn-youtube:hover {
-      background-color: #cc0000;
-    }
-    .toolbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
+    .btn-youtube:hover { background-color: #cc0000; }
+    .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
     .btn-save {
-      background-color: var(--accent-color);
-      color: #000;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 0.95rem;
-      transition: background-color 0.2s;
+      background-color: var(--accent-color); color: #000; padding: 10px 20px; border: none;
+      border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.95rem; transition: background-color 0.2s;
     }
-    .btn-save:hover {
-      background-color: var(--accent-hover);
-    }
-    #saveStatus {
-      font-size: 0.9rem;
-      font-weight: bold;
-      color: var(--accent-color);
-    }
+    .btn-save:hover { background-color: var(--accent-hover); }
+    #saveStatus { font-size: 0.9rem; font-weight: bold; color: var(--accent-color); }
     
-    /* Modal Dialog Styles */
+    /* Modal Styles */
     .modal-backdrop {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background-color: rgba(0, 0, 0, 0.7);
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background-color: rgba(0, 0, 0, 0.7); justify-content: center; align-items: center; z-index: 1000;
     }
     .modal {
-      background-color: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 30px;
-      width: 100%;
-      max-width: 450px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px;
+      padding: 30px; width: 100%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     }
     .modal h2 { margin-top: 0; margin-bottom: 20px; color: var(--text-primary); }
     .modal .form-group { margin-bottom: 15px; }
-    .modal-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      margin-top: 20px;
-    }
-    .btn-secondary {
-      background-color: #333;
-      color: #fff;
-      padding: 10px 16px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-    }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+    .btn-secondary { background-color: #333; color: #fff; padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
     .btn-secondary:hover { background-color: #444; }
   </style>
 </head>
@@ -115,7 +56,7 @@
     
     <div class="toolbar">
       <div class="stats" id="songStats">Loading songs...</div>
-      <button id="saveOrderBtn" class="btn-save">💾 Save Order to Google Sheets</button>
+      <button id="saveOrderBtn" class="btn-save">💾 Save Order & Keys to Google Sheets</button>
     </div>
     <div id="saveStatus" style="margin-bottom: 15px;"></div>
 
@@ -124,26 +65,18 @@
     </div>
   </div>
 
-  <!-- Metadata Edit Modal -->
+  <!-- Key Edit Modal -->
   <div id="editModal" class="modal-backdrop">
     <div class="modal">
-      <h2 id="modalSongTitle">Edit Song Info</h2>
+      <h2 id="modalSongTitle">Edit Song Key</h2>
       <form id="editForm">
         <div class="form-group">
           <label for="editKey">Song Key:</label>
           <input type="text" id="editKey" placeholder="e.g. Am, G, C#">
         </div>
-        <div class="form-group">
-          <label for="editCapo">Capo Position:</label>
-          <input type="text" id="editCapo" placeholder="e.g. Capo 2rd Fret or None">
-        </div>
-        <div class="form-group">
-          <label for="editNotes">Notes / Tempo:</label>
-          <input type="text" id="editNotes" placeholder="e.g. Fast tempo, watch bridge">
-        </div>
         <div class="modal-actions">
           <button type="button" id="cancelModalBtn" class="btn-secondary">Cancel</button>
-          <button type="submit" class="btn-primary" style="width: auto;">Save Metadata</button>
+          <button type="submit" class="btn-primary" style="width: auto;">Apply Key</button>
         </div>
       </form>
     </div>
@@ -163,8 +96,6 @@
       const editForm = document.getElementById('editForm');
       const modalSongTitle = document.getElementById('modalSongTitle');
       const editKey = document.getElementById('editKey');
-      const editCapo = document.getElementById('editCapo');
-      const editNotes = document.getElementById('editNotes');
       const cancelModalBtn = document.getElementById('cancelModalBtn');
 
       let allSongs = [];
@@ -187,24 +118,22 @@
         if (!playlistRes.ok) throw new Error('Failed to load playlist.json');
         allSongs = await playlistRes.json();
 
-        // Fetch custom order and metadata overrides from Google Sheets
+        // Fetch custom state (unified order and keys) from Google Sheets
         if (sheetsDeployUrl) {
           try {
             const sheetRes = await fetch(`${sheetsDeployUrl}?action=getCustomState`);
             const sheetData = await sheetRes.json();
             
-            // Apply custom metadata overrides if present
             if (sheetData && sheetData.metadata) {
               allSongs = allSongs.map(song => {
                 const meta = sheetData.metadata[song.title.toLowerCase().trim()];
-                if (meta) {
-                  return { ...song, ...meta };
+                if (meta && meta.key) {
+                  return { ...song, key: meta.key };
                 }
                 return song;
               });
             }
 
-            // Apply custom sort order if present
             if (sheetData && Array.isArray(sheetData.order) && sheetData.order.length > 0) {
               allSongs = sortSongsByCustomOrder(allSongs, sheetData.order);
             }
@@ -243,7 +172,7 @@
           return;
         }
 
-        songStats.textContent = `Double click any row to edit key/notes • Drag rows to reorder (${songsToRender.length} songs)`;
+        songStats.textContent = `Double click row to edit key • Drag rows to reorder (${songsToRender.length} songs)`;
 
         songContainer.innerHTML = songsToRender.map((song, index) => `
           <div class="song-card" draggable="true" data-index="${index}" data-title="${escapeHtml(song.title)}">
@@ -251,11 +180,11 @@
               <span class="song-id">#${index + 1}</span>
               <div class="song-text">
                 <h3>${escapeHtml(song.title)}</h3>
-                <p>${escapeHtml(song.artist)} ${song.capo ? `• <span style="color:var(--accent-color)">Capo: ${escapeHtml(song.capo)}</span>` : ''} ${song.notes ? `• <em>${escapeHtml(song.notes)}</em>` : ''}</p>
+                <p>${escapeHtml(song.artist)}</p>
               </div>
             </div>
             <div class="song-meta">
-              ${song.key ? `<span class="song-key" title="Song Key">${escapeHtml(song.key)}</span>` : ''}
+              <span class="song-key" title="Song Key">${escapeHtml(song.key || '-')}</span>
               <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(song.artist + ' ' + song.title + ' guitar backing track chord')}" target="_blank" class="btn-youtube">
                 ▶ Play
               </a>
@@ -267,7 +196,6 @@
         initDoubleClickEvents();
       }
 
-      // Drag and Drop Logic
       function initDragAndDrop() {
         const cards = songContainer.querySelectorAll('.song-card');
         cards.forEach(card => {
@@ -311,36 +239,43 @@
         });
       }
 
-      // Explicit Save Order Button Action
+      // Save Order & Keys to Google Sheets
       saveOrderBtn.addEventListener('click', async () => {
         const cardElements = songContainer.querySelectorAll('.song-card');
-        const newOrderTitles = [];
-        cardElements.forEach(card => newOrderTitles.push(card.getAttribute('data-title')));
+        const itemsToSave = [];
+        
+        cardElements.forEach(card => {
+          const title = card.getAttribute('data-title');
+          const songObj = allSongs.find(s => s.title === title);
+          itemsToSave.push({
+            title: title,
+            key: songObj ? songObj.key : ''
+          });
+        });
 
         if (!sheetsDeployUrl) {
           alert('Google Sheets Web App URL is missing in config.json.');
           return;
         }
 
-        saveStatus.textContent = '⏳ Saving setlist order to Google Sheets...';
+        saveStatus.textContent = '⏳ Saving setlist order & keys to Google Sheets...';
         try {
           await fetch(sheetsDeployUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify({
-              action: 'saveCustomOrder',
-              order: newOrderTitles
+              action: 'saveCustomOrderWithKeys',
+              items: itemsToSave
             })
           });
-          saveStatus.textContent = '✅ Order successfully saved to Google Sheets!';
+          saveStatus.textContent = '✅ Order & keys successfully saved to Google Sheets!';
           setTimeout(() => { saveStatus.textContent = ''; }, 4000);
         } catch (err) {
-          console.error('Failed saving order:', err);
-          saveStatus.textContent = '❌ Error saving order.';
+          console.error('Failed saving state:', err);
+          saveStatus.textContent = '❌ Error saving to Google Sheets.';
         }
       });
 
-      // Double Click Modal Logic
       function initDoubleClickEvents() {
         const cards = songContainer.querySelectorAll('.song-card');
         cards.forEach(card => {
@@ -350,10 +285,8 @@
             if (!song) return;
 
             currentEditingSongTitle = song.title;
-            modalSongTitle.textContent = `Edit: ${song.title}`;
+            modalSongTitle.textContent = `Edit Key: ${song.title}`;
             editKey.value = song.key || '';
-            editCapo.value = song.capo || '';
-            editNotes.value = song.notes || '';
 
             editModal.style.display = 'flex';
           });
@@ -364,47 +297,23 @@
         editModal.style.display = 'none';
       });
 
-      editForm.addEventListener('submit', async (e) => {
+      editForm.addEventListener('submit', (e) => {
         e.preventDefault();
         if (!currentEditingSongTitle) return;
 
-        const updatedMeta = {
-          key: editKey.value.trim(),
-          capo: editCapo.value.trim(),
-          notes: editNotes.value.trim()
-        };
+        const newKey = editKey.value.trim();
 
-        // Update local array state
+        // Update local state array
         allSongs = allSongs.map(song => {
           if (song.title === currentEditingSongTitle) {
-            return { ...song, ...updatedMeta };
+            return { ...song, key: newKey };
           }
           return song;
         });
 
         renderSongs(allSongs);
         editModal.style.display = 'none';
-
-        // Persist to Google Sheets
-        if (sheetsDeployUrl) {
-          saveStatus.textContent = `⏳ Saving metadata for "${currentEditingSongTitle}"...`;
-          try {
-            await fetch(sheetsDeployUrl, {
-              method: 'POST',
-              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-              body: JSON.stringify({
-                action: 'saveSongMetadata',
-                title: currentEditingSongTitle,
-                metadata: updatedMeta
-              })
-            });
-            saveStatus.textContent = '✅ Metadata updated and stored in Google Sheets!';
-            setTimeout(() => { saveStatus.textContent = ''; }, 4000);
-          } catch (err) {
-            console.error('Failed saving metadata:', err);
-            saveStatus.textContent = '❌ Error saving song metadata.';
-          }
-        }
+        saveStatus.textContent = `💡 Key updated locally for "${currentEditingSongTitle}". Click "Save Order & Keys" to commit to Google Sheets.`;
       });
 
       searchInput.addEventListener('input', (e) => {
