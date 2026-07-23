@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#070707">
+    <title>Baba Rock — Operations Dashboard</title>
+    
+    <!-- External Icon & Typography Assets -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    
+    <!-- System Stylesheet Core -->
+    <link rel="stylesheet" href="core/style.css">
+</head>
+<body>
+
+    <!-- Dynamic Hero Background Layer (Populated via JS) -->
+    <div id="heroBg" class="hero-background" role="img" aria-label="Band Hero Background"></div>
+    <div class="hero-overlay"></div>
+
+    <!-- Main Navigation Header -->
+    <header class="navbar">
+        <div class="brand-logo" id="brandLogo">BR</div>
+        <nav aria-label="Main Navigation">
+            <ul class="nav-links">
+                <li><a href="index.html" class="active">Overview</a></li>
+                <li><a href="playlist.html">Repertoire</a></li>
+                <li><a href="takvim.html">Schedule</a></li>
+                <li><a href="rehearsal.html">Setlists</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Continuous Hardware-Accelerated LED Marquee Ticker -->
+    <div class="led-banner" aria-live="polite">
+        <div class="led-track" id="marqueeTrack">
+            <!-- Populated dynamically by AppEngine -->
+        </div>
+    </div>
+
+    <!-- Center Hero Section -->
+    <main class="hero-content">
+        <h1 class="hero-title">
+            FORGE THE SOUND.
+            <span>LIVE THE MISSION.</span>
+        </h1>
+        <p class="hero-subtext">
+            Operations platform for bands who rehearse hard and perform harder. Zero servers. High performance.
+        </p>
+    </main>
+
+    <!-- Dynamic Bottom Navigation & Operational Control Grid -->
+    <nav class="bottom-nav-grid" id="navigationGrid" aria-label="Operational Modules">
+        <!-- Populated dynamically from config.json via AppEngine -->
+    </nav>
+
+    <!-- System Core Runtime Bootstrapper -->
+    <script src="core/app.js"></script>
+</body>
+</html>
