@@ -15,13 +15,13 @@
       align-items: center; gap: 6px; transition: background-color 0.2s;
     }
     .btn-youtube:hover { background-color: #d70015; }
-    .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    .toolbar { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
     .btn-save {
-      background-color: var(--accent-color); color: #ffffff; padding: 12px 20px; border: none;
-      border-radius: var(--border-radius); font-weight: 500; cursor: pointer; font-size: 0.95rem; transition: background-color 0.2s;
+      background-color: var(--accent-color); color: #ffffff; padding: 10px 18px; border: none;
+      border-radius: var(--border-radius); font-weight: 500; cursor: pointer; font-size: 0.9rem; transition: background-color 0.2s;
     }
     .btn-save:hover { background-color: var(--accent-hover); }
-    #saveStatus { font-size: 0.9rem; font-weight: 500; color: var(--accent-color); min-height: 20px; margin-bottom: 16px; }
+    #saveStatus { font-size: 0.85rem; font-weight: 500; color: var(--accent-color); min-height: 18px; margin-top: 4px; }
     
     /* Modal Styles */
     .modal-backdrop {
@@ -53,14 +53,17 @@
       <div class="meta-info" id="bandMembers">Loading band info...</div>
     </header>
 
-    <input type="text" id="searchInput" class="search-bar" placeholder="🔍 Search by song title or artist...">
-    
-    <div id="saveStatus"></div>
-    <div class="toolbar">
-      <div class="stats" id="songStats">Loading songs...</div>
-      <button id="saveOrderBtn" class="btn-save">💾 Save Setlist Order</button>
+    <!-- Sticky Control Zone -->
+    <div class="sticky-controls">
+      <input type="text" id="searchInput" class="search-bar" placeholder="🔍 Search by song title or artist...">
+      <div class="toolbar">
+        <div class="stats" id="songStats">Loading songs...</div>
+        <button id="saveOrderBtn" class="btn-save">💾 Save Setlist Order</button>
+      </div>
+      <div id="saveStatus"></div>
     </div>
 
+    <!-- Scrollable Song List Container -->
     <div id="songContainer" class="song-list">
       <div class="loading">Loading repertoire...</div>
     </div>
@@ -119,7 +122,6 @@
         if (!playlistRes.ok) throw new Error('Failed to load playlist.json');
         allSongs = await playlistRes.json();
 
-        // Fetch custom state from Google Sheets
         if (sheetsDeployUrl) {
           try {
             const sheetRes = await fetch(`${sheetsDeployUrl}?action=getCustomState`);
@@ -139,7 +141,7 @@
               allSongs = sortSongsByCustomOrder(allSongs, sheetData.order);
             }
           } catch (err) {
-            console.warn('Could not fetch custom sheet state, using default playlist.json order.', err);
+            console.warn('Could not fetch custom sheet state.', err);
           }
         }
 
@@ -207,7 +209,7 @@
           card.addEventListener('dragend', () => {
             card.classList.remove('dragging');
             updateVisualIds();
-            syncArrayOrderWithDOM(); // Keep underlying array strictly aligned with DOM order
+            syncArrayOrderWithDOM();
           });
         });
 
@@ -244,7 +246,6 @@
         });
       }
 
-      // Synchronizes the JavaScript memory array order with the live DOM order after drag/drop
       function syncArrayOrderWithDOM() {
         const cardElements = songContainer.querySelectorAll('.song-card');
         const newOrderedSongs = [];
@@ -253,7 +254,6 @@
           const found = allSongs.find(s => s.title.toLowerCase().trim() === title.toLowerCase().trim());
           if (found) newOrderedSongs.push(found);
         });
-        // Include any items filtered out by search input so they aren't lost
         allSongs.forEach(song => {
           if (!newOrderedSongs.some(s => s.title.toLowerCase().trim() === song.title.toLowerCase().trim())) {
             newOrderedSongs.push(song);
@@ -270,7 +270,6 @@
         }));
       }
 
-      // Explicit Save Order Button Action
       saveOrderBtn.addEventListener('click', async () => {
         const itemsToSave = getCurrentPayloadItems();
         if (!sheetsDeployUrl) {
@@ -317,17 +316,13 @@
         editModal.style.display = 'none';
       });
 
-      // Key Edit Apply Button: Preserves current DOM sort order and updates key atomically
       editForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!currentEditingSongTitle) return;
 
         const newKey = editKey.value.trim();
-
-        // Ensure array order matches DOM before editing key
         syncArrayOrderWithDOM();
 
-        // Update local state array with new key
         allSongs = allSongs.map(song => {
           if (song.title.toLowerCase().trim() === currentEditingSongTitle.toLowerCase().trim()) {
             return { ...song, key: newKey };
@@ -341,7 +336,6 @@
         if (!sheetsDeployUrl) return;
 
         saveStatus.textContent = `⏳ Saving key & preserving setlist order in Google Sheets...`;
-        
         const itemsToSave = getCurrentPayloadItems();
 
         try {
@@ -353,7 +347,7 @@
               items: itemsToSave
             })
           });
-          saveStatus.textContent = `✅ Key updated & setlist order successfully preserved in Google Sheets!`;
+          saveStatus.textContent = `✅ Key updated & setlist order preserved in Google Sheets!`;
           setTimeout(() => { saveStatus.textContent = ''; }, 4000);
         } catch (err) {
           console.error('Failed saving state:', err);
