@@ -1,51 +1,52 @@
-import json
-import re
-import urllib.request
-from bs4 import BeautifulSoup
+name: Daily Ultimate Guitar Sync
 
-def fetch_ug_data():
-    # 1. Read configuration from root config.json
-    with open('config.json', 'r') as f:
-        config = json.load(f)
+on:
+  schedule:
+    # Runs automatically at 00:00 UTC every day
+    - cron: '0 0 * * *'
+  # Enables the manual 'Run workflow' button in the GitHub Actions UI
+  workflow_dispatch:
 
-    ug_url = config.get('ugPlaylistUrl')
-    if not ug_url:
-        print("No UG playlist URL configured.")
-        return
+# Grants write permission so the bot can push updated playlist.json back to the repo
+permissions:
+  contents: write
 
-    # 2. Fetch HTML content from Ultimate Guitar link
-    req = urllib.request.Request(
-        ug_url, 
-        headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
-    )
-    
-    html = urllib.request.urlopen(req).read().decode('utf-8')
-    soup = BeautifulSoup(html, 'html.parser')
+jobs:
+  sync-playlist:
+    runs-on: ubuntu-latest
 
-    # 3. Ultimate Guitar stores structured store data inside window.UGAPP.store.page
-    songs = []
-    store_script = soup.find('script', text=re.compile(r'window\.UGAPP\.store\.page'))
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-    if store_script:
-        json_text = re.search(r'window\.UGAPP\.store\.page\s*=\s*(\{.*?\});', store_script.string)
-        if json_text:
-            data = json.loads(json_text.group(1))
-            # Extract tab list items
-            tabs = data.get('data', {}).get('tabs', [])
-            for idx, tab in enumerate(tabs):
-                songs.append({
-                    "id": idx + 1,
-                    "title": tab.get('song_name', 'Unknown Title'),
-                    "artist": tab.get('artist_name', 'Unknown Artist'),
-                    "key": tab.get('tonality_name', ''),
-                    "ugUrl": tab.get('tab_url', '')
-                })
+      - name: Set up Python Environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
 
-    # 4. Save parsed songs directly into root playlist.json
-    with open('playlist.json', 'w') as f:
-        json.dump(songs, f, indent=2)
+      - name: Install Scraper Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests beautifulsoup4
 
-    print(f"Successfully fetched {len(songs)} songs from UG and updated playlist.json.")
+      - name: Execute Ultimate Guitar Fetcher
+        run: python scripts/fetch_ug_playlist.py
 
-if __name__ == '__main__':
-    fetch_ug_data()
+      - name: Commit and Push Updated Playlist
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          # Ensure target files exist so git add never fails
+          [ -f config.json ] || echo "{}" > config.json
+          [ -f playlist.json ] || echo "[]" > playlist.json
+          
+          git add config.json playlist.json
+          
+          # Only commit and push if differences are detected
+          if ! git diff --staged --quiet; then
+            git commit -m "build(cron): auto-sync Ultimate Guitar playlist"
+            git push
+          else
+            echo "No changes detected in playlist.json. Skipping commit."
+          fi
