@@ -1,63 +1,127 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#070707">
-    <title>Baba Rock — Operations Dashboard</title>
-    
-    <!-- External Icon & Typography Assets -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
-    
-    <!-- System Stylesheet Core -->
-    <link rel="stylesheet" href="core/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BLACK RITUAL — Operations Hub</title>
+  
+  <!-- Display Font (Oswald) & Body Font (Inter) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Oswald:wght@700&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons for Dashboard Cards -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Shared CSS Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Embedded CSS Fallback (Allows instant testing if style.css isn't linked yet) -->
+  <style>
+    /* Inline safety net ensuring image background renders immediately for test */
+    .hero {
+      background: 
+        linear-gradient(90deg, rgba(10,10,12,0.95) 0%, rgba(10,10,12,0.6) 50%, rgba(10,10,12,0.9) 100%),
+        radial-gradient(circle at 65% 40%, rgba(211, 16, 16, 0.35) 0%, transparent 40%),
+        url('band_x.jpg') center/cover no-repeat #0a0a0c;
+    }
+  </style>
 </head>
 <body>
 
-    <!-- Dynamic Hero Background Layer (Populated via JS) -->
-    <div id="heroBg" class="hero-background" role="img" aria-label="Band Hero Background"></div>
-    <div class="hero-overlay"></div>
+  <!-- Navigation Bar Header -->
+  <header>
+    <nav class="navbar">
+      <!-- Band Logo Badge -->
+      <a href="index.html" class="brand-logo" id="navLogo">BR</a>
+      
+      <!-- Primary Navigation Links -->
+      <ul class="nav-links">
+        <li><a href="index.html" class="active">Overview</a></li>
+        <li><a href="playlist.html">Repertoire</a></li>
+        <li><a href="calendar.html">Schedule</a></li>
+        <li><a href="admin.html">Members</a></li>
+        <li><a href="fan.html">Encore Game</a></li>
+      </ul>
 
-    <!-- Main Navigation Header -->
-    <header class="navbar">
-        <div class="brand-logo" id="brandLogo">BR</div>
-        <nav aria-label="Main Navigation">
-            <ul class="nav-links">
-                <li><a href="index.html" class="active">Overview</a></li>
-                <li><a href="playlist.html">Repertoire</a></li>
-                <li><a href="takvim.html">Schedule</a></li>
-                <li><a href="rehearsal.html">Setlists</a></li>
-            </ul>
-        </nav>
-    </header>
+      <!-- Action Button for Live Rehearsal Mode -->
+      <a href="rehearsal.html" class="btn-sign-in">SHOW MODE</a>
+    </nav>
+  </header>
 
-    <!-- Continuous Hardware-Accelerated LED Marquee Ticker -->
-    <div class="led-banner" aria-live="polite">
-        <div class="led-track" id="marqueeTrack">
-            <!-- Populated dynamically by AppEngine -->
-        </div>
+  <!-- Hero Section -->
+  <main class="hero">
+    <div class="hero-content">
+      <h1 class="hero-title">
+        <span class="white" id="heroTagline1">FORGE THE SOUND.</span>
+        <span class="red" id="heroTagline2">LIVE THE MISSION.</span>
+      </h1>
+      <p class="hero-subtitle" id="heroSubtext">
+        Operations for bands who rehearse hard and perform harder.
+      </p>
+      <div class="hero-actions">
+        <a href="rehearsal.html" class="btn-primary">GET STARTED</a>
+        <a href="playlist.html" class="btn-link">EXPLORE FEATURES &rarr;</a>
+      </div>
     </div>
 
-    <!-- Center Hero Section -->
-    <main class="hero-content">
-        <h1 class="hero-title">
-            FORGE THE SOUND.
-            <span>LIVE THE MISSION.</span>
-        </h1>
-        <p class="hero-subtext">
-            Operations platform for bands who rehearse hard and perform harder. Zero servers. High performance.
-        </p>
-    </main>
+    <!-- Bottom Feature Grid / Navigation Dock -->
+    <section class="features-dock" aria-label="Band Operations Features">
+      
+      <!-- Card 1: Playlist / Repertoire -->
+      <a href="playlist.html" class="feature-card">
+        <i class="fa-solid fa-list-ul feature-icon" aria-hidden="true"></i>
+        <div class="feature-info">
+          <h3>SETLISTS</h3>
+          <p>Organize your songs and arrangements.</p>
+        </div>
+      </a>
 
-    <!-- Dynamic Bottom Navigation & Operational Control Grid -->
-    <nav class="bottom-nav-grid" id="navigationGrid" aria-label="Operational Modules">
-        <!-- Populated dynamically from config.json via AppEngine -->
-    </nav>
+      <!-- Card 2: Calendar / Availability Schedule -->
+      <a href="calendar.html" class="feature-card">
+        <i class="fa-regular fa-calendar-days feature-icon" aria-hidden="true"></i>
+        <div class="feature-info">
+          <h3>SCHEDULE</h3>
+          <p>Plan rehearsals, gigs, and events.</p>
+        </div>
+      </a>
 
-    <!-- System Core Runtime Bootstrapper -->
-    <script src="core/app.js"></script>
+      <!-- Card 3: Band Admin / Member Directory -->
+      <a href="admin.html" class="feature-card">
+        <i class="fa-solid fa-users feature-icon" aria-hidden="true"></i>
+        <div class="feature-info">
+          <h3>MEMBERS</h3>
+          <p>Manage roles and communication.</p>
+        </div>
+      </a>
+
+      <!-- Card 4: Fan Encore Voting Game -->
+      <a href="fan.html" class="feature-card">
+        <i class="fa-solid fa-fire feature-icon" aria-hidden="true"></i>
+        <div class="feature-info">
+          <h3>ENCORE VOTES</h3>
+          <p>Let fans choose live stage tracks.</p>
+        </div>
+      </a>
+
+    </section>
+  </main>
+
+  <!-- External Configuration Script -->
+  <script src="config.js"></script>
+
+  <!-- Self-contained Test Driver Script -->
+  <script>
+    // Fallback script execution to verify UI rendering even before config.js is populated
+    document.addEventListener("DOMContentLoaded", () => {
+      if (typeof BAND_CONFIG !== "undefined") {
+        document.getElementById("navLogo").textContent = BAND_CONFIG.brandInitials || "BR";
+        document.getElementById("heroTagline1").textContent = BAND_CONFIG.taglineLine1 || "FORGE THE SOUND.";
+        document.getElementById("heroTagline2").textContent = BAND_CONFIG.taglineLine2 || "LIVE THE MISSION.";
+        document.getElementById("heroSubtext").textContent = BAND_CONFIG.subtext || "Operations for bands who rehearse hard and perform harder.";
+      }
+      console.log("Index HTML successfully loaded with Dark Industrial Rock theme.");
+    });
+  </script>
 </body>
 </html>
