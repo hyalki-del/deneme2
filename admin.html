@@ -3,80 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin - Band Configuration</title>
-  <link rel="stylesheet" href="css/main.css">
-  <link rel="stylesheet" href="css/components.css">
-  <link rel="stylesheet" href="css/responsive.css">
+  <title>Admin Setup</title>
 </head>
 <body>
+  <h1>Band Configuration</h1>
 
-  <main class="container">
-    <header class="admin-header">
-      <h1>🎸 Band Admin Configuration</h1>
-      <p>Configure band details. All settings are pushed directly to Google Sheets (no local browser storage).</p>
-    </header>
+  <form id="adminForm">
+    <p>
+      <label for="bandName">Band Name:</label><br>
+      <input type="text" id="bandName" name="bandName" required>
+    </p>
 
-    <form id="admin-form" class="card">
-      
-      <!-- Band Basic Details -->
-      <section class="form-section">
-        <h2>1. Band Information</h2>
-        
-        <div class="form-group">
-          <label for="band-name">Band Name *</label>
-          <input type="text" id="band-name" name="bandName" placeholder="e.g., The Midnight Echoes" required>
-        </div>
+    <p>
+      <label for="bandMembers">Band Member Names (comma separated):</label><br>
+      <input type="text" id="bandMembers" name="bandMembers" placeholder="John, Sarah, Alex" required>
+    </p>
 
-        <div class="form-group">
-          <label for="band-members">Band Member Names * (Comma separated)</label>
-          <input type="text" id="band-members" name="bandMembers" placeholder="e.g., John (Drums), Sarah (Bass), Alex (Guitar)" required>
-        </div>
-      </section>
+    <p>
+      <label for="bandPhotos">Band Photos (optional):</label><br>
+      <input type="file" id="bandPhotos" name="bandPhotos" accept="image/*" multiple>
+    </p>
 
-      <!-- Media Links -->
-      <section class="form-section">
-        <h2>2. Band Branding Assets</h2>
-        
-        <div class="form-group">
-          <label for="band-logo-url">Band Logo Image URL</label>
-          <input type="url" id="band-logo-url" name="bandLogoUrl" placeholder="https://raw.githubusercontent.com/.../logo.png">
-          <small class="help-text">Direct image URL hosted on GitHub or web storage.</small>
-        </div>
+    <p>
+      <label for="googleSheetsDeployUrl">Google Sheets Deploy Web Link:</label><br>
+      <input type="url" id="googleSheetsDeployUrl" name="googleSheetsDeployUrl" required>
+    </p>
 
-        <div class="form-group">
-          <label for="band-photos-urls">Band Photo URLs (Comma separated)</label>
-          <input type="text" id="band-photos-urls" name="bandPhotosUrls" placeholder="https://.../photo1.jpg, https://.../photo2.jpg">
-        </div>
-      </section>
+    <p>
+      <label for="ugPlaylistUrl">UG Playlist Link:</label><br>
+      <input type="url" id="ugPlaylistUrl" name="ugPlaylistUrl" required>
+    </p>
 
-      <!-- External Service Webhooks -->
-      <section class="form-section">
-        <h2>3. Database & Ultimate Guitar Links</h2>
+    <p>
+      <button type="submit">Save Configuration</button>
+    </p>
+  </form>
 
-        <div class="form-group">
-          <label for="sheets-url">Google Sheets Web App Deploy URL *</label>
-          <input type="url" id="sheets-url" name="sheetsUrl" placeholder="https://script.google.com/macros/s/.../exec" required>
-          <small class="help-text">Your published Google Apps Script deployment URL acting as our backend API.</small>
-        </div>
+  <div id="status"></div>
 
-        <div class="form-group">
-          <label for="ug-link">Ultimate Guitar Playlist URL *</label>
-          <input type="url" id="ug-link" name="ugLink" placeholder="https://www.ultimate-guitar.com/user/playlist/..." required>
-          <small class="help-text">Link to the band's official playlist on Ultimate Guitar.</small>
-        </div>
-      </section>
-
-      <!-- Submit Actions -->
-      <div class="form-actions">
-        <button type="submit" id="save-btn" class="btn btn-primary">Save Settings & Fetch UG Playlist</button>
-        <div id="status-message" class="status-msg" aria-live="polite"></div>
-      </div>
-
-    </form>
-  </main>
-
-  <script src="js/config.js"></script>
-  <script src="js/api.js"></script>
   <script src="js/admin.js"></script>
 </body>
 </html>
