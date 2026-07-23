@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "1.0.0",
+  "overrides": {
+    "song-001": {
+      "originalKey": "Em",
+      "targetKey": "Dm",
+      "semitoneOffset": -2,
+      "capo": 0,
+      "notes": "Dropped 1 full step for live vocals"
+    },
+    "song-004": {
+      "originalKey": "G",
+      "targetKey": "A",
+      "semitoneOffset": 2,
+      "capo": 2,
+      "notes": "E-flat tuning on stage"
+    }
+  }
+}
