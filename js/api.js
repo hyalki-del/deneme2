@@ -1,35 +1,56 @@
 /**
- * API SERVICE LAYER
- * Handles all network requests to Google Apps Script (BaaS) and LRCLIB (Lyrics Engine)
+ * DECOUPLED API SERVICE LAYER (STATIC DATA + BACKGROUND SYNC)
  */
 
 const ApiService = {
   
   /**
-   * Fetch master playlist from Google Apps Script
+   * Fetch master playlist from pre-built static JSON file (instant load)
    */
   async getPlaylist() {
-    if (!BAND_CONFIG.googleScriptUrl) {
-      console.warn("Google Script URL is not set in config.js");
+    try {
+      // First attempt to load static background-synced JSON asset
+      const response = await fetch('data/playlist.json');
+      if (response.ok) {
+        const result = await response.json();
+        return result.data || result;
+      }
+      throw new Error("Static playlist.json not found, attempting fallback...");
+    } catch (err) {
+      console.warn("Static JSON fetch failed. Attempting live fallback...", err);
+      // Fallback to live Google Apps Script endpoint if static file is missing
+      if (BAND_CONFIG.googleScriptUrl) {
+        const liveRes = await fetch(`${BAND_CONFIG.googleScriptUrl}?action=getPlaylist`);
+        const liveJson = await liveRes.json();
+        return liveJson.data || [];
+      }
       return [];
     }
+  },
+
+  /**
+   * Fetch calendar events from static JSON file
+   */
+  async getCalendar() {
     try {
-      const response = await fetch(`${BAND_CONFIG.googleScriptUrl}?action=getPlaylist`);
-      const result = await response.json();
-      if (result.status === 'success') {
-        return result.data;
-      } else {
-        throw new Error(result.message || 'Failed to load playlist');
+      const response = await fetch('data/calendar.json');
+      if (response.ok) {
+        const result = await response.json();
+        return result.data || result;
       }
+      throw new Error("Static calendar.json not found");
     } catch (err) {
-      console.error("API Error [getPlaylist]:", err);
-      throw err;
+      if (BAND_CONFIG.googleScriptUrl) {
+        const liveRes = await fetch(`${BAND_CONFIG.googleScriptUrl}?action=getCalendar`);
+        const liveJson = await liveRes.json();
+        return liveJson.data || [];
+      }
+      return [];
     }
   },
 
   /**
    * Send new playlist display order to Google Sheets
-   * @param {Array<string>} songIdArray - Array of song IDs in the updated sequence
    */
   async updateOrder(songIdArray) {
     return this._post({
@@ -53,35 +74,19 @@ const ApiService = {
    * Fetch lyrics from LRCLIB API with fallbacks
    */
   async fetchLyrics(title, artist) {
-    // LRCLIB API Endpoint
     const getUrl = `https://lrclib.net/api/get?artist_name=${encodeURIComponent(artist)}&track_name=${encodeURIComponent(title)}`;
-    
     try {
       const response = await fetch(getUrl, {
-        headers: {
-          'User-Agent': 'BandOpsApp/1.0 (https://github.com/band-app)'
-        }
+        headers: { 'User-Agent': 'BandOpsApp/1.0 (https://github.com/band-app)' }
       });
 
       if (response.ok) {
         const data = await response.json();
         return data.plainLyrics || data.syncedLyrics || "Plain lyrics not available for this track.";
       }
-      
-      // Fallback: Search endpoint if exact GET fails
-      const searchUrl = `https://lrclib.net/api/search?track_name=${encodeURIComponent(title)}&artist_name=${encodeURIComponent(artist)}`;
-      const searchRes = await fetch(searchUrl);
-      if (searchRes.ok) {
-        const searchData = await searchRes.json();
-        if (searchData.length > 0) {
-          return searchData[0].plainLyrics || searchData[0].syncedLyrics || "Lyrics found, but format is unreadable.";
-        }
-      }
-
       return "Lyrics not found in LRCLIB database.";
     } catch (err) {
-      console.error("LRCLIB Fetch Error:", err);
-      return "Network error while fetching lyrics. Please check your internet connection.";
+      return "Network error while fetching lyrics.";
     }
   },
 
@@ -93,7 +98,7 @@ const ApiService = {
     try {
       const response = await fetch(BAND_CONFIG.googleScriptUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // Avoid CORS preflight flags on GAS
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify(payload)
       });
       return await response.json();
