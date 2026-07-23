@@ -1,1 +1,261 @@
-[]
+[
+  {
+    "id": 1,
+    "title": "Separate Ways",
+    "artist": "Journey",
+    "key": "Em",
+    "ugUrl": "https://tabs.ultimate-guitar.com/tab/journey/separate-ways-official-2160971"
+  },
+  {
+    "id": 2,
+    "title": "The Look",
+    "artist": "Roxette",
+    "key": "D",
+    "ugUrl": "https://tabs.ultimate-guitar.com/tab/roxette/the-look-official-3296174"
+  },
+  {
+    "id": 3,
+    "title": "Hold The Line",
+    "artist": "Toto",
+    "key": "F#m",
+    "ugUrl": "https://tabs.ultimate-guitar.com/tab/toto/hold-the-line-official-1941091"
+  },
+  {
+    "id": 4,
+    "title": "Sari Cizmeli Mehmet Aga",
+    "artist": "Kurban",
+    "key": "",
+    "ugUrl": "https://tabs.ultimate-guitar.com/tab/kurban/sari-cizmeli-mehmet-aga-guitar-pro-455900"
+  },
+  {
+    "id": 5,
+    "title": "Wasting Love",
+    "artist": "Iron Maiden",
+    "key": "Em",
+    "ugUrl": "https://tabs.ultimate-guitar.com/tab/iron-maiden/wasting-love-official-2630988"
+  },
+  {
+    "id": 6,
+    "title": "Kryptonite",
+    "artist": "3 Doors Down",
+    "key": "Bm",
+    "ugUrl": "https://tabs.ultimate-guitar.com/tab/3-doors-down/kryptonite-official-1942221"
+  },
+  {
+    "id": 7,
+    "title": "Perfect Strangers",
+    "artist": "Deep Purple",
+    "key": "Dm",
+    "ugUrl": "https://tabs.ultimate-guitar.com/tab/deep-purple/perfect-strangers-official-1956643"
+  },
+  {
+    "id": 8,
+    "title": "Its My Life",
+    "artist": "Bon Jovi",
+    "key": "Cm",
+    "ugUrl": "https://tabs.ultimate-guitar.com/tab/bon-jovi/its-my-life-official-1911445"
+  },
+  {
+    "id": 9,
+    "title": "Give In To Me",
+    "artist": "Three Days Grace",
+    "key": "",
+    "ugUrl": "https://tabs.ultimate-guitar.com/tab/three-days-grace/give-in-to-me-guitar-pro-1958905"
+  },
+  {
+    "id": 10,
+    "title": "Symphony Of Destruction",
+    "artist": "Megadeth",
+    "key": "Em",
+    "ugUrl": "https://tabs.ultimate-guitar.com/tab/megadeth/symphony-of-destruction-official-1938491"
+  },
+  {
+    "id": 11,
+    "title": "Islak Islak",
+    "artist": "Baris Akarsu",
+    "key": "",
+    "ugUrl": "https://tabs.ultimate-guitar.com/tab/baris-akarsu/islak-islak-guitar-pro-2308913"
+  },
+  {
+    "id": 12,
+    "title": "Bebek",
+    "artist": "Acil Servis",
+    "key": "",
+    "ugUrl": "https://tabs.ultimate-guitar.com/tab/acil-servis/bebek-chords-535994"
+  },
+  {
+    "id": 13,
+    "title": "Dont Chain My Heart",
+    "artist": "Toto",
+    "key": "Bm",
+    "ugUrl": "https://tabs.ultimate-guitar.com/tab/toto/dont-chain-my-heart-chords-3193367"
+  },
+  {
+    "id": 14,
+    "title": "You Give Love A Bad Name",
+    "artist": "Bon Jovi",
+    "key": "Cm",
+    "ugUrl": "https://tabs.ultimate-guitar.com/tab/bon-jovi/you-give-love-a-bad-name-official-1930611"
+  },
+  {
+    "id": 15,
+    "title": "Sometimes I Feel Like Screaming",
+    "artist": "Deep Purple",
+    "key": "Dm",
+    "ugUrl": "https://tabs.ultimate-guitar.com/tab/deep-purple/sometimes-i-feel-like-screaming-official-3386660"
+  },
+  {
+    "id": 16,
+    "title": "No Prayer For The Dying",
+    "artist": "Iron Maiden",
+    "key": "",
+    "ugUrl": "https://tabs.ultimate-guitar.com/tab/iron-maiden/no-prayer-for-the-dying-guitar-pro-892382"
+  },
+  {
+    "id": 17,
+    "title": "Walking By Myself",
+    "artist": "Gary Moore",
+    "key": "E",
+    "ugUrl": "https://tabs.ultimate-guitar.com/tab/gary-moore/walking-by-myself-official-2116005"
+  },
+  {
+    "id": 18,
+    "title": "Since You Been Gone",
+    "artist": "Rainbow",
+    "key": "G",
+    "ugUrl": "https://tabs.ultimate-guitar.com/tab/rainbow/since-you-been-gone-official-2595327"
+  },
+  {
+    "id": 19,
+    "title": "Long Train Runnin",
+    "artist": "The Doobie Brothers",
+    "key": "Gm",
+    "ugUrl": "https://tabs.ultimate-guitar.com/tab/the-doobie-brothers/long-train-runnin-official-1957117"
+  },
+  {
+    "id": 20,
+    "title": "I Surrender",
+    "artist": "Rainbow",
+    "key": "Gm",
+    "ugUrl": "https://tabs.ultimate-guitar.com/tab/rainbow/i-surrender-official-3586637"
+  },
+  {
+    "id": 21,
+    "title": "Oh Pretty Woman",
+    "artist": "Gary Moore",
+    "key": "Cm",
+    "ugUrl": "https://tabs.ultimate-guitar.com/tab/gary-moore/oh-pretty-woman-official-2117291"
+  },
+  {
+    "id": 22,
+    "title": "Born To Be Wild",
+    "artist": "Steppenwolf",
+    "key": "E",
+    "ugUrl": "https://tabs.ultimate-guitar.com/tab/steppenwolf/born-to-be-wild-official-2163647"
+  },
+  {
+    "id": 23,
+    "title": "Here I Go Again",
+    "artist": "Whitesnake",
+    "key": "G",
+    "ugUrl": "https://tabs.ultimate-guitar.com/tab/whitesnake/here-i-go-again-official-1950263"
+  },
+  {
+    "id": 24,
+    "title": "Livin On A Prayer",
+    "artist": "Bon Jovi",
+    "key": "Em",
+    "ugUrl": "https://tabs.ultimate-guitar.com/tab/bon-jovi/livin-on-a-prayer-official-2095069"
+  },
+  {
+    "id": 25,
+    "title": "Smoke On The Water",
+    "artist": "Deep Purple",
+    "key": "Gm",
+    "ugUrl": "https://tabs.ultimate-guitar.com/tab/deep-purple/smoke-on-the-water-official-1920913"
+  },
+  {
+    "id": 26,
+    "title": "Johnny B Goode",
+    "artist": "Chuck Berry",
+    "key": "Bb",
+    "ugUrl": "https://tabs.ultimate-guitar.com/tab/chuck-berry/johnny-b-goode-official-1920905"
+  },
+  {
+    "id": 27,
+    "title": "Blue Suede Shoes",
+    "artist": "Elvis Presley",
+    "key": "A",
+    "ugUrl": "https://tabs.ultimate-guitar.com/tab/elvis-presley/blue-suede-shoes-official-2005915"
+  },
+  {
+    "id": 28,
+    "title": "Jailhouse Rock",
+    "artist": "The Blues Brothers",
+    "key": "",
+    "ugUrl": "https://tabs.ultimate-guitar.com/tab/the-blues-brothers/jailhouse-rock-chords-891736"
+  },
+  {
+    "id": 29,
+    "title": "Fool For Your Loving",
+    "artist": "Whitesnake",
+    "key": "Am",
+    "ugUrl": "https://tabs.ultimate-guitar.com/tab/whitesnake/fool-for-your-loving-official-1975301"
+  },
+  {
+    "id": 30,
+    "title": "Burning Heart",
+    "artist": "Survivor",
+    "key": "Am",
+    "ugUrl": "https://tabs.ultimate-guitar.com/tab/survivor/burning-heart-official-3575867"
+  },
+  {
+    "id": 31,
+    "title": "Eye Of The Tiger",
+    "artist": "Survivor",
+    "key": "Cm",
+    "ugUrl": "https://tabs.ultimate-guitar.com/tab/survivor/eye-of-the-tiger-official-1916231"
+  },
+  {
+    "id": 32,
+    "title": "The Final Countdown",
+    "artist": "Europe",
+    "key": "F#m",
+    "ugUrl": "https://tabs.ultimate-guitar.com/tab/europe/the-final-countdown-official-1911381"
+  },
+  {
+    "id": 33,
+    "title": "Burn",
+    "artist": "Deep Purple",
+    "key": "Gm",
+    "ugUrl": "https://tabs.ultimate-guitar.com/tab/deep-purple/burn-official-2480706"
+  },
+  {
+    "id": 34,
+    "title": "In These Arms",
+    "artist": "Bon Jovi",
+    "key": "E",
+    "ugUrl": "https://tabs.ultimate-guitar.com/tab/bon-jovi/in-these-arms-official-4132021"
+  },
+  {
+    "id": 35,
+    "title": "For Whom The Bell Tolls",
+    "artist": "Metallica",
+    "key": "Em",
+    "ugUrl": "https://tabs.ultimate-guitar.com/tab/metallica/for-whom-the-bell-tolls-official-1936233"
+  },
+  {
+    "id": 36,
+    "title": "Diamonds And Rust",
+    "artist": "Judas Priest",
+    "key": "Em",
+    "ugUrl": "https://tabs.ultimate-guitar.com/tab/judas-priest/diamonds-and-rust-official-3331547"
+  },
+  {
+    "id": 37,
+    "title": "Fear Of The Dark",
+    "artist": "Iron Maiden",
+    "key": "Dm",
+    "ugUrl": "https://tabs.ultimate-guitar.com/tab/iron-maiden/fear-of-the-dark-official-1936207"
+  }
+]
