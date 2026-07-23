@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#0a0a0c">
-  <title>Admin Operations — Band Settings</title>
+  <title>Admin Operations — Setup & Sync</title>
 
   <!-- Typography & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -82,11 +82,21 @@
       font-size: 1.2rem;
       margin-bottom: 8px;
     }
+
+    .security-notice {
+      background: rgba(211, 16, 16, 0.1);
+      border-left: 3px solid var(--accent-red);
+      padding: 12px 16px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    }
   </style>
 </head>
 <body class="no-select">
 
-  <!-- Navigation Bar -->
+  <!-- Isolated Navigation Bar (Notice 'Members/Admin' is unlinked from public view) -->
   <header>
     <nav class="navbar">
       <a href="index.html" class="brand-logo" id="navLogo">BR</a>
@@ -94,7 +104,6 @@
         <li><a href="index.html">Overview</a></li>
         <li><a href="playlist.html">Repertoire</a></li>
         <li><a href="calendar.html">Schedule</a></li>
-        <li><a href="admin.html" class="active">Members</a></li>
         <li><a href="fan.html">Encore Game</a></li>
       </ul>
       <a href="rehearsal.html" class="btn-sign-in">SHOW MODE</a>
@@ -104,8 +113,12 @@
   <!-- Admin Workspace -->
   <main class="admin-container">
     <section class="admin-panel">
-      <h2>BAND OPERATIONS CONFIGURATION</h2>
+      <h2>INITIAL BAND SETUP &amp; CONFIGURATION</h2>
       
+      <div class="security-notice">
+        🔒 <strong>Private Access Page:</strong> This page is disconnected from public navigation links. Keep this URL private for band administration only.
+      </div>
+
       <form id="adminForm" onsubmit="saveAdminSettings(event)">
         
         <div class="form-group">
@@ -129,21 +142,21 @@
         </div>
 
         <button type="submit" class="btn-primary" style="width: 100%;">
-          <i class="fa-solid fa-floppy-disk" style="margin-right: 8px;"></i> SAVE CONFIGURATION
+          <i class="fa-solid fa-floppy-disk" style="margin-right: 8px;"></i> SAVE CONFIGURATION OVERRIDE
         </button>
       </form>
 
       <!-- Ultimate Guitar Auto-Sync Utility -->
       <div class="sync-box">
-        <h3><i class="fa-solid fa-cloud-arrow-down" style="margin-right: 8px;"></i> ULTIMATE GUITAR REPERTOIRE SYNC</h3>
+        <h3><i class="fa-solid fa-cloud-arrow-down" style="margin-right: 8px;"></i> ULTIMATE GUITAR REPERTOIRE IMPORT</h3>
         <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
-          Paste your Ultimate Guitar playlist URL below. The serverless proxy will scrape the song titles and populate your Google Sheets database.
+          Paste your Ultimate Guitar playlist URL below. The Google Apps Script proxy will scrape song titles and populate your Google Sheet database.
         </p>
         <div class="form-group">
           <input type="url" id="ugPlaylistUrl" class="form-control" placeholder="https://www.ultimate-guitar.com/user/playlist/...">
         </div>
         <button class="btn-primary" style="background: #00bbff; box-shadow: 0 4px 16px rgba(0,187,255,0.3);" onclick="syncUGPlaylist()">
-          FETCH & POPULATE SHEET
+          FETCH &amp; POPULATE SHEET
         </button>
       </div>
 
@@ -156,7 +169,6 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      // Pre-fill form fields from active config
       if (typeof BAND_CONFIG !== 'undefined') {
         document.getElementById('cfgBandName').value = BAND_CONFIG.bandName || '';
         document.getElementById('cfgBrandInitials').value = BAND_CONFIG.brandInitials || '';
@@ -175,9 +187,9 @@
         members: document.getElementById('cfgMembers').value.split(',').map(m => m.trim())
       };
 
-      // Save locally to session storage
+      // Save locally to browser local storage
       localStorage.setItem('BAND_CONFIG_OVERRIDE', JSON.stringify(updatedConfig));
-      alert("Configuration saved! Refreshing page...");
+      alert("Configuration override saved locally!");
       window.location.reload();
     }
 
@@ -186,18 +198,18 @@
       if (!ugUrl) return alert("Please enter a valid Ultimate Guitar playlist link.");
       if (!BAND_CONFIG.googleScriptUrl) return alert("Please configure and save your Google Apps Script Web App URL first.");
 
-      alert("Triggering server-side Ultimate Guitar scraper... This may take a few seconds.");
+      alert("Triggering server-side scraper... This may take a few seconds.");
 
       try {
         const response = await fetch(`${BAND_CONFIG.googleScriptUrl}?action=parseUGLink&url=${encodeURIComponent(ugUrl)}`);
         const result = await response.json();
         if (result.status === 'success') {
-          alert(`Successfully parsed ${result.data.length} tracks! Check your Repertoire page.`);
+          alert(`Successfully parsed ${result.data.length} tracks into Google Sheets! Your background sync script will update data/playlist.json.`);
         } else {
           alert("Error parsing UG link: " + result.message);
         }
       } catch (err) {
-        alert("Failed to connect to backend proxy server.");
+        alert("Failed to connect to backend server.");
       }
     }
   </script>
