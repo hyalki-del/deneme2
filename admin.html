@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Band Setup & Admin Configuration</title>
+  <title>Admin - Band Configuration</title>
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/responsive.css">
@@ -12,8 +12,8 @@
 
   <main class="container">
     <header class="admin-header">
-      <h1>🎸 Band Setup & Configuration</h1>
-      <p>Configure your band settings, Google Sheets integration, and Ultimate Guitar playlist source.</p>
+      <h1>🎸 Band Admin Configuration</h1>
+      <p>Configure band details. All settings are pushed directly to Google Sheets (no local browser storage).</p>
     </header>
 
     <form id="admin-form" class="card">
@@ -29,48 +29,47 @@
 
         <div class="form-group">
           <label for="band-members">Band Member Names * (Comma separated)</label>
-          <input type="text" id="band-members" name="bandMembers" placeholder="e.g., John (Drums), Sarah (Bass), Alex (Guitar & Vox)" required>
+          <input type="text" id="band-members" name="bandMembers" placeholder="e.g., John (Drums), Sarah (Bass), Alex (Guitar)" required>
         </div>
       </section>
 
-      <!-- Media Uploads -->
+      <!-- Media Links -->
       <section class="form-section">
-        <h2>2. Band Branding (Optional)</h2>
+        <h2>2. Band Branding Assets</h2>
         
         <div class="form-group">
-          <label for="band-logo">Band Logo</label>
-          <input type="file" id="band-logo" name="bandLogo" accept="image/*">
-          <div id="logo-preview" class="image-preview"></div>
+          <label for="band-logo-url">Band Logo Image URL</label>
+          <input type="url" id="band-logo-url" name="bandLogoUrl" placeholder="https://raw.githubusercontent.com/.../logo.png">
+          <small class="help-text">Direct image URL hosted on GitHub or web storage.</small>
         </div>
 
         <div class="form-group">
-          <label for="band-photos">Band Photos / Gallery</label>
-          <input type="file" id="band-photos" name="bandPhotos" accept="image/*" multiple>
-          <div id="photos-preview" class="image-preview-grid"></div>
+          <label for="band-photos-urls">Band Photo URLs (Comma separated)</label>
+          <input type="text" id="band-photos-urls" name="bandPhotosUrls" placeholder="https://.../photo1.jpg, https://.../photo2.jpg">
         </div>
       </section>
 
-      <!-- Integrations & Links -->
+      <!-- External Service Webhooks -->
       <section class="form-section">
-        <h2>3. Data Integration</h2>
+        <h2>3. Database & Ultimate Guitar Links</h2>
 
         <div class="form-group">
-          <label for="sheets-url">Google Sheets Web App URL *</label>
+          <label for="sheets-url">Google Sheets Web App Deploy URL *</label>
           <input type="url" id="sheets-url" name="sheetsUrl" placeholder="https://script.google.com/macros/s/.../exec" required>
-          <small class="help-text">Your deployed Google Apps Script Web App link for syncing calendar & playlist metadata.</small>
+          <small class="help-text">Your published Google Apps Script deployment URL acting as our backend API.</small>
         </div>
 
         <div class="form-group">
-          <label for="ug-link">Ultimate Guitar (UG) Playlist Link *</label>
+          <label for="ug-link">Ultimate Guitar Playlist URL *</label>
           <input type="url" id="ug-link" name="ugLink" placeholder="https://www.ultimate-guitar.com/user/playlist/..." required>
-          <small class="help-text">The public link to your band's UG chord/tab playlist or favorites collection.</small>
+          <small class="help-text">Link to the band's official playlist on Ultimate Guitar.</small>
         </div>
       </section>
 
-      <!-- Form Actions -->
+      <!-- Submit Actions -->
       <div class="form-actions">
-        <button type="submit" id="save-btn" class="btn btn-primary">Save Configuration & Fetch Playlist</button>
-        <span id="status-message" class="status-msg"></span>
+        <button type="submit" id="save-btn" class="btn btn-primary">Save Settings & Fetch UG Playlist</button>
+        <div id="status-message" class="status-msg" aria-live="polite"></div>
       </div>
 
     </form>
