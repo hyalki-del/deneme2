@@ -52,41 +52,41 @@ def parse_ug_json_payload(page_html):
     if js_store_match:
         try:
             return json.loads(html.unescape(js_store_match.group(1)))
-        except:
+        except Exception:
             pass
 
     next_data_match = re.search(r'<script id="__NEXT_DATA__" type="application/json">(.*?)</script>', page_html, re.DOTALL)
     if next_data_match:
         try:
             return json.loads(next_data_match.group(1))
-        except:
+        except Exception:
             pass
 
     return None
 
 def sanitize_filename_part(text):
-    """Sanitizes text for safe file system usage."""
     text = text.lower().strip()
     text = re.sub(r'[^\w\s-]', '', text)
     text = re.sub(r'[\s_-]+', '-', text)
     return text
 
 def fetch_lyrics_from_lrclib(song_title, artist_name):
-    """Queries LRCLIB API for lyrics matching song title and artist."""
+    """Queries LRCLIB API safely with strict timeouts to prevent pipeline hangs."""
     url = f"https://lrclib.net/api/search?track_name={requests.utils.quote(song_title)}&artist_name={requests.utils.quote(artist_name)}"
-    headers = {'User-Agent': 'BandRepertoireManager/1.0 (Educational Project)'}
+    headers = {'User-Agent': 'BandRepertoireManager/1.0 (CI Pipeline)'}
     try:
-        resp = requests.get(url, headers=headers, timeout=10)
+        resp = requests.get(url, headers=headers, timeout=8)
         if resp.status_code == 200:
             results = resp.json()
             if isinstance(results, list) and len(results) > 0:
-                # Prefer plain lyrics, fallback to synced lyrics if plain is empty
                 match = results[0]
                 lyrics = match.get('plainLyrics') or match.get('syncedLyrics')
                 if lyrics:
                     return lyrics
+    except requests.exceptions.Timeout:
+        print(f"⚠️ LRCLIB timeout for '{song_title} - {artist_name}'", flush=True)
     except Exception as e:
-        print(f"⚠️ LRCLIB fetch warning for {song_title}: {e}", flush=True)
+        print(f"⚠️ LRCLIB fetch warning for '{song_title}': {e}", flush=True)
     return None
 
 def fetch_ug_data():
@@ -103,15 +103,26 @@ def fetch_ug_data():
     sheets_url = config.get('googleSheetsDeployUrl', '').strip()
 
     if not ug_url:
-        print("❌ CRITICAL ERROR: 'ugPlaylistUrl' is empty.", flush=True)
+        print("❌ CRITICAL ERROR: 'ugPlaylistUrl' is empty in config.json.", flush=True)
         sys.exit(1)
 
-    headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Chrome/124.0.0.0 Safari/537.36'}
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+    }
+
     try:
+        print(f"🎸 Requesting Ultimate Guitar URL with 15s timeout...", flush=True)
         resp = requests.get(ug_url, headers=headers, timeout=15)
+        if resp.status_code != 200:
+            print(f"❌ CRITICAL ERROR: Ultimate Guitar returned HTTP status {resp.status_code}", flush=True)
+            sys.exit(1)
         page_html = resp.text
+    except requests.exceptions.Timeout:
+        print("❌ CRITICAL ERROR: Request to Ultimate Guitar timed out after 15 seconds.", flush=True)
+        sys.exit(1)
     except Exception as e:
-        print(f"❌ HTTP Fetch Error: {e}", flush=True)
+        print(f"❌ CRITICAL ERROR: HTTP Fetch Error from Ultimate Guitar: {e}", flush=True)
         sys.exit(1)
 
     songs = []
@@ -133,13 +144,16 @@ def fetch_ug_data():
     with open('playlist.json', 'w') as f:
         json.dump(songs, f, indent=2)
 
-    print(f"💾 Written {len(songs)} songs to playlist.json.", flush=True)
+    print(f"💾 Successfully written {len(songs)} songs to playlist.json.", flush=True)
 
-    # Create lyrics directory if it doesn't exist
+    # Safely handle lyrics directory generation
     lyrics_dir = 'lyrics'
-    os.makedirs(lyrics_dir, exist_ok=True)
+    try:
+        os.makedirs(lyrics_dir, exist_ok=True)
+    except Exception as e:
+        print(f"⚠️ Warning: Could not create lyrics directory: {e}", flush=True)
 
-    print("🎵 Downloading lyrics from LRCLIB...", flush=True)
+    print("🎵 Downloading lyrics from LRCLIB with strict timeouts...", flush=True)
     for song in songs:
         s_id = song['id']
         s_title = song['title']
@@ -149,27 +163,34 @@ def fetch_ug_data():
         filepath = os.path.join(lyrics_dir, filename)
         
         lyrics_text = fetch_lyrics_from_lrclib(s_title, s_artist)
-        if lyrics_text:
+        try:
             with open(filepath, 'w', encoding='utf-8') as lf:
-                lf.write(lyrics_text)
-            print(f"   [+] Saved lyrics: {filename}", flush=True)
-        else:
-            with open(filepath, 'w', encoding='utf-8') as lf:
-                lf.write(f"--- Lyrics not found on LRCLIB for {s_title} by {s_artist} ---")
-            print(f"   [!] Lyrics missing, placeholder created: {filename}", flush=True)
+                if lyrics_text:
+                    lf.write(lyrics_text)
+                    print(f"   [+] Saved lyrics: {filename}", flush=True)
+                else:
+                    lf.write(f"--- Lyrics not found on LRCLIB for {s_title} by {s_artist} ---")
+                    print(f"   [!] Lyrics missing, placeholder created: {filename}", flush=True)
+        except Exception as file_err:
+            print(f"   [x] File write error for {filename}: {file_err}", flush=True)
 
+    # Sync with Google Sheets with a strict timeout guard
     if sheets_url and sheets_url.startswith("http"):
         print("📡 Syncing repertoire order with Google Sheets...", flush=True)
         try:
-            requests.post(
+            sync_resp = requests.post(
                 sheets_url,
                 headers={'Content-Type': 'text/plain;charset=utf-8'},
                 json={'action': 'syncPipelineSongs', 'songs': songs},
-                timeout=15
+                timeout=12
             )
-            print("✅ Google Sheets Sync Completed.", flush=True)
+            print(f"✅ Google Sheets Sync Completed (Status: {sync_resp.status_code}).", flush=True)
+        except requests.exceptions.Timeout:
+            print("⚠️ Warning: Google Sheets sync request timed out. Pipeline proceeding.", flush=True)
         except Exception as err:
             print(f"⚠️ Warning: Sheets sync failed: {err}", flush=True)
+
+    print("🚀 Pipeline execution completed successfully!", flush=True)
 
 if __name__ == '__main__':
     fetch_ug_data()
