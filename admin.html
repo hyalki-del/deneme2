@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0a0c">
+  <title>Admin Operations — Band Settings</title>
+
+  <!-- Typography & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Oswald:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Shared Design Engine -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <style>
+    .admin-container {
+      max-width: 800px;
+      margin: 120px auto 60px auto;
+      padding: 0 24px;
+    }
+
+    .admin-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border-dark);
+      border-radius: var(--radius-md);
+      padding: 32px;
+      backdrop-filter: blur(12px);
+    }
+
+    .admin-panel h2 {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border-dark);
+      padding-bottom: 12px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 14px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-dark);
+      border-radius: var(--radius-sm);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--accent-red);
+    }
+
+    .sync-box {
+      background: rgba(0, 187, 255, 0.05);
+      border: 1px dashed #00bbff;
+      border-radius: var(--radius-sm);
+      padding: 20px;
+      margin-top: 32px;
+    }
+
+    .sync-box h3 {
+      font-family: var(--font-display);
+      color: #00bbff;
+      font-size: 1.2rem;
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body class="no-select">
+
+  <!-- Navigation Bar -->
+  <header>
+    <nav class="navbar">
+      <a href="index.html" class="brand-logo" id="navLogo">BR</a>
+      <ul class="nav-links">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="playlist.html">Repertoire</a></li>
+        <li><a href="calendar.html">Schedule</a></li>
+        <li><a href="admin.html" class="active">Members</a></li>
+        <li><a href="fan.html">Encore Game</a></li>
+      </ul>
+      <a href="rehearsal.html" class="btn-sign-in">SHOW MODE</a>
+    </nav>
+  </header>
+
+  <!-- Admin Workspace -->
+  <main class="admin-container">
+    <section class="admin-panel">
+      <h2>BAND OPERATIONS CONFIGURATION</h2>
+      
+      <form id="adminForm" onsubmit="saveAdminSettings(event)">
+        
+        <div class="form-group">
+          <label for="cfgBandName">Band Name</label>
+          <input type="text" id="cfgBandName" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+          <label for="cfgBrandInitials">Brand Initials (Logo Badge)</label>
+          <input type="text" id="cfgBrandInitials" class="form-control" maxlength="3" required>
+        </div>
+
+        <div class="form-group">
+          <label for="cfgScriptUrl">Google Apps Script Web App URL</label>
+          <input type="url" id="cfgScriptUrl" class="form-control" placeholder="https://script.google.com/macros/s/.../exec">
+        </div>
+
+        <div class="form-group">
+          <label for="cfgMembers">Band Members (Comma Separated)</label>
+          <input type="text" id="cfgMembers" class="form-control" placeholder="Vocals, Guitar 1, Bass, Drums">
+        </div>
+
+        <button type="submit" class="btn-primary" style="width: 100%;">
+          <i class="fa-solid fa-floppy-disk" style="margin-right: 8px;"></i> SAVE CONFIGURATION
+        </button>
+      </form>
+
+      <!-- Ultimate Guitar Auto-Sync Utility -->
+      <div class="sync-box">
+        <h3><i class="fa-solid fa-cloud-arrow-down" style="margin-right: 8px;"></i> ULTIMATE GUITAR REPERTOIRE SYNC</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
+          Paste your Ultimate Guitar playlist URL below. The serverless proxy will scrape the song titles and populate your Google Sheets database.
+        </p>
+        <div class="form-group">
+          <input type="url" id="ugPlaylistUrl" class="form-control" placeholder="https://www.ultimate-guitar.com/user/playlist/...">
+        </div>
+        <button class="btn-primary" style="background: #00bbff; box-shadow: 0 4px 16px rgba(0,187,255,0.3);" onclick="syncUGPlaylist()">
+          FETCH & POPULATE SHEET
+        </button>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- JS Dependencies -->
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Pre-fill form fields from active config
+      if (typeof BAND_CONFIG !== 'undefined') {
+        document.getElementById('cfgBandName').value = BAND_CONFIG.bandName || '';
+        document.getElementById('cfgBrandInitials').value = BAND_CONFIG.brandInitials || '';
+        document.getElementById('cfgScriptUrl').value = BAND_CONFIG.googleScriptUrl || '';
+        document.getElementById('cfgMembers').value = (BAND_CONFIG.members || []).join(', ');
+      }
+    });
+
+    function saveAdminSettings(e) {
+      e.preventDefault();
+      
+      const updatedConfig = {
+        bandName: document.getElementById('cfgBandName').value,
+        brandInitials: document.getElementById('cfgBrandInitials').value,
+        googleScriptUrl: document.getElementById('cfgScriptUrl').value,
+        members: document.getElementById('cfgMembers').value.split(',').map(m => m.trim())
+      };
+
+      // Save locally to session storage
+      localStorage.setItem('BAND_CONFIG_OVERRIDE', JSON.stringify(updatedConfig));
+      alert("Configuration saved! Refreshing page...");
+      window.location.reload();
+    }
+
+    async function syncUGPlaylist() {
+      const ugUrl = document.getElementById('ugPlaylistUrl').value;
+      if (!ugUrl) return alert("Please enter a valid Ultimate Guitar playlist link.");
+      if (!BAND_CONFIG.googleScriptUrl) return alert("Please configure and save your Google Apps Script Web App URL first.");
+
+      alert("Triggering server-side Ultimate Guitar scraper... This may take a few seconds.");
+
+      try {
+        const response = await fetch(`${BAND_CONFIG.googleScriptUrl}?action=parseUGLink&url=${encodeURIComponent(ugUrl)}`);
+        const result = await response.json();
+        if (result.status === 'success') {
+          alert(`Successfully parsed ${result.data.length} tracks! Check your Repertoire page.`);
+        } else {
+          alert("Error parsing UG link: " + result.message);
+        }
+      } catch (err) {
+        alert("Failed to connect to backend proxy server.");
+      }
+    }
+  </script>
+</body>
+</html>
