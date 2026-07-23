@@ -9,6 +9,19 @@
     .song-card { cursor: grab; user-select: none; }
     .song-card:active { cursor: grabbing; }
     .song-card.dragging { opacity: 0.4; border: 2px dashed var(--accent-color); }
+    
+    /* Clickable Song Title for Lyrics Prompter */
+    .song-title-link {
+      color: var(--text-primary);
+      text-decoration: none;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .song-title-link:hover {
+      color: var(--accent-color);
+      text-decoration: underline;
+    }
+
     .btn-youtube {
       background-color: #ff3b30; color: #fff; padding: 6px 12px; border-radius: 8px;
       text-decoration: none; font-weight: 500; font-size: 0.85rem; display: inline-flex;
@@ -168,6 +181,12 @@
         return sorted.map((s, index) => ({ ...s, id: index + 1 }));
       }
 
+      function sanitizeForFilename(text) {
+        return text.toLowerCase()
+          .replace(/[^\w\s-]/g, '')
+          .replace(/[\s_-]+/g, '-');
+      }
+
       function renderSongs(songsToRender) {
         if (!songsToRender || songsToRender.length === 0) {
           songContainer.innerHTML = `<div class="empty">No songs found.</div>`;
@@ -175,16 +194,19 @@
           return;
         }
 
-        songStats.textContent = `Double click row to edit key • Drag rows to reorder (${songsToRender.length} songs)`;
+        songStats.textContent = `Click song name for lyrics • Double click to edit key • Drag to reorder (${songsToRender.length} songs)`;
 
         songContainer.innerHTML = songsToRender.map((song, index) => {
           const youtubeQuery = encodeURIComponent(`${song.title} ${song.artist}`);
+          const lyricFilename = `${song.id}-${sanitizeForFilename(song.title)}-${sanitizeForFilename(song.artist)}.txt`;
+          const lyricUrl = `lyrics/${lyricFilename}`;
+
           return `
             <div class="song-card" draggable="true" data-index="${index}" data-title="${escapeHtml(song.title)}">
               <div class="song-details">
                 <span class="song-id">#${index + 1}</span>
                 <div class="song-text">
-                  <h3>${escapeHtml(song.title)}</h3>
+                  <h3><a href="${lyricUrl}" target="_blank" class="song-title-link" title="Open Lyrics Prompter">${escapeHtml(song.title)}</a></h3>
                   <p>${escapeHtml(song.artist)}</p>
                 </div>
               </div>
@@ -298,7 +320,10 @@
       function initDoubleClickEvents() {
         const cards = songContainer.querySelectorAll('.song-card');
         cards.forEach(card => {
-          card.addEventListener('dblclick', () => {
+          card.addEventListener('dblclick', (e) => {
+            // Prevent triggering modal if clicking directly on the lyrics link anchor
+            if (e.target.tagName === 'A') return;
+
             const title = card.getAttribute('data-title');
             const song = allSongs.find(s => s.title.toLowerCase().trim() === title.toLowerCase().trim());
             if (!song) return;
