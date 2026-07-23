@@ -4,32 +4,46 @@ import sys
 import html
 import requests
 
-def extract_tabs_recursively(data):
+def is_tab_object(obj):
     """
-    Recursively searches the JSON object tree to find 
-    the list of tabs regardless of UG's page schema variations.
+    Checks if a dictionary represents a tab or contains a nested tab object.
+    """
+    if not isinstance(obj, dict):
+        return False
+    
+    # Check if 'tab' is a nested dictionary inside the item wrapper
+    target = obj.get('tab') if isinstance(obj.get('tab'), dict) else obj
+    
+    # Core identifying attributes of an Ultimate Guitar tab entry
+    has_title = any(k in target for k in ['song_name', 'songName', 'song_title', 'title'])
+    has_url = any(k in target for k in ['tab_url', 'tabUrl', 'url', 'web_url'])
+    has_artist = any(k in target for k in ['artist_name', 'artistName', 'artist_title'])
+    
+    return (has_title and has_url) or (has_title and has_artist)
+
+def find_all_tab_arrays(data):
+    """
+    Recursively explores every node in the JSON tree and returns 
+    the first array where items represent valid tab objects.
     """
     if isinstance(data, dict):
-        # Check standard playlist/tab keys in UG JSON schemas
-        for key in ['tabs', 'playlist', 'user_playlist', 'tabs_list', 'songbook']:
-            if key in data:
-                val = data[key]
-                if isinstance(val, list) and len(val) > 0:
-                    first_item = val[0]
-                    if isinstance(first_item, dict) and ('song_name' in first_item or 'songName' in first_item or 'tab_url' in first_item or 'tab' in first_item):
-                        return val
-                elif isinstance(val, dict) and 'tabs' in val:
-                    return extract_tabs_recursively(val['tabs'])
-
-        # Recurse through dictionary values
-        for k, v in data.items():
-            result = extract_tabs_recursively(v)
+        # 1. Check all lists directly attached to this dictionary
+        for key, value in data.items():
+            if isinstance(value, list) and len(value) > 0:
+                # Test first few items to confirm it's a tab list
+                if any(is_tab_object(item) for item in value[:3]):
+                    return value
+        
+        # 2. Recurse deeper into nested dictionaries
+        for key, value in data.items():
+            result = find_all_tab_arrays(value)
             if result:
                 return result
 
     elif isinstance(data, list):
+        # If we encounter a list of lists/dicts, recurse into items
         for item in data:
-            result = extract_tabs_recursively(item)
+            result = find_all_tab_arrays(item)
             if result:
                 return result
 
@@ -37,12 +51,11 @@ def extract_tabs_recursively(data):
 
 def parse_ug_json_payload(page_html):
     """
-    Extracts and parses UG's embedded JSON payload using 3 fallback strategies.
+    Extracts and parses UG's embedded JSON payload using multi-fallback strategy.
     """
     # Strategy 1: Search for class="js-store" data-content="..."
     js_store_match = re.search(r'class=["\']js-store["\'][^>]*data-content=["\'](.*?)["\']', page_html, re.DOTALL)
     if not js_store_match:
-        # Alt regex order (data-content before class)
         js_store_match = re.search(r'data-content=["\'](.*?)["\'][^>]*class=["\']js-store["\']', page_html, re.DOTALL)
 
     if js_store_match:
@@ -64,7 +77,7 @@ def parse_ug_json_payload(page_html):
         except Exception as e:
             print(f"⚠️ Failed parsing __NEXT_DATA__ block: {e}", flush=True)
 
-    # Strategy 3: Search for window.UGAPP = ... or window.__Store__ = ...
+    # Strategy 3: Search for window.UGAPP or window.__Store__
     win_store_match = re.search(r'window\.(?:UGAPP|__Store__|store)\s*=\s*(\{.*?\});\s*</script>', page_html, re.DOTALL)
     if win_store_match:
         try:
@@ -74,7 +87,7 @@ def parse_ug_json_payload(page_html):
         except Exception as e:
             print(f"⚠️ Failed parsing window state block: {e}", flush=True)
 
-    print("❌ All JSON extraction strategies failed to find embedded payload.", flush=True)
+    print("❌ All JSON extraction strategies failed to locate embedded payload.", flush=True)
     return None
 
 def fetch_ug_data():
@@ -118,22 +131,47 @@ def fetch_ug_data():
 
     songs = []
 
-    # 3. Parse JSON store using fallbacks
+    # 3. Parse JSON store and extract tabs
     payload = parse_ug_json_payload(page_html)
 
     if payload:
-        raw_tabs = extract_tabs_recursively(payload)
-        print(f"🔍 Extracted {len(raw_tabs)} raw tab entries from payload.", flush=True)
+        raw_tabs = find_all_tab_arrays(payload)
+        print(f"🔍 Extracted {len(raw_tabs)} raw tab entries from payload tree.", flush=True)
 
         for idx, item in enumerate(raw_tabs):
             if isinstance(item, dict):
-                # Handle nested item['tab'] structure or direct tab dict
-                tab_data = item.get('tab', item)
+                # Handle wrapper objects where tab info lives under item['tab']
+                tab_data = item.get('tab') if isinstance(item.get('tab'), dict) else item
                 
-                song_title = tab_data.get('song_name') or tab_data.get('songName') or tab_data.get('song_title') or 'Unknown Title'
-                artist_name = tab_data.get('artist_name') or tab_data.get('artistName') or 'Unknown Artist'
-                key_val = tab_data.get('tonality_name') or tab_data.get('tonalityName') or tab_data.get('key') or ''
-                tab_url = tab_data.get('tab_url') or tab_data.get('tabUrl') or ''
+                song_title = (
+                    tab_data.get('song_name') or 
+                    tab_data.get('songName') or 
+                    tab_data.get('song_title') or 
+                    tab_data.get('title') or 
+                    'Unknown Title'
+                )
+                
+                artist_name = (
+                    tab_data.get('artist_name') or 
+                    tab_data.get('artistName') or 
+                    tab_data.get('artist_title') or 
+                    'Unknown Artist'
+                )
+                
+                key_val = (
+                    tab_data.get('tonality_name') or 
+                    tab_data.get('tonalityName') or 
+                    tab_data.get('key') or 
+                    ''
+                )
+                
+                tab_url = (
+                    tab_data.get('tab_url') or 
+                    tab_data.get('tabUrl') or 
+                    tab_data.get('url') or 
+                    tab_data.get('web_url') or 
+                    ''
+                )
 
                 songs.append({
                     "id": idx + 1,
@@ -143,7 +181,7 @@ def fetch_ug_data():
                     "ugUrl": tab_url
                 })
 
-    # 4. Save result
+    # 4. Write result
     with open('playlist.json', 'w') as f:
         json.dump(songs, f, indent=2)
 
