@@ -3,18 +3,16 @@
    ========================================== */
 
 :root {
-  --bg-color: #000000;
-  --card-bg: #121214;
-  --text-primary: #f5f5f7;
+  --bg-color: #ffffff;
+  --card-bg: #f5f5f7;
+  --text-primary: #1d1d1f;
   --text-secondary: #86868b;
-  --accent-color: #2997ff; /* Apple System Blue */
-  --accent-hover: #0077ed;
-  --border-color: rgba(255, 255, 255, 0.1);
-  --border-radius: 16px;
-  --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-  --error-color: #ff453a;
+  --accent-color: #ff3b30; /* Apple System Red / Vibrant Pop */
+  --accent-hover: #d70015;
+  --border-color: transparent; /* Zero borders, pure layout */
+  --border-radius: 12px;
+  --shadow: none;
 }
-
 body {
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
   background-color: var(--bg-color);
