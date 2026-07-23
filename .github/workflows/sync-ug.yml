@@ -1,16 +1,14 @@
-name: Daily Ultimate Guitar Sync
+name: Sync Ultimate Guitar Repertoire
 
 on:
   schedule:
-    - cron: '0 0 * * *'
-  workflow_dispatch:
-
-permissions:
-  contents: write
+    - cron: '0 3 * * *' # Runs daily at 3:00 AM UTC
+  workflow_dispatch: # Allows manual triggering from GitHub UI
 
 jobs:
-  sync-playlist:
+  sync:
     runs-on: ubuntu-latest
+    timeout-minutes: 10 # 🛡️ Prevents the job from hanging indefinitely
 
     steps:
       - name: Checkout Repository
@@ -19,30 +17,20 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: '3.10'
 
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requests beautifulsoup4
+          pip install requests
 
-      - name: Execute Scraper Pipeline
-        env:
-          PYTHONUNBUFFERED: "1"
+      - name: Run Scraper and Sync Pipeline
         run: python scripts/fetch_ug_playlist.py
 
-      - name: Commit and Push Updated Playlist
+      - name: Commit and Push Changes if playlist or lyrics updated
         run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          
-          [ -f playlist.json ] || echo "[]" > playlist.json
-          
-          git add playlist.json config.json
-          
-          if ! git diff --staged --quiet; then
-            git commit -m "build(cron): auto-sync playlist.json"
-            git push
-          else
-            echo "No changes detected. Skipping commit."
-          fi
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add playlist.json lyrics/
+          git diff --staged --quiet || git commit -m "Auto-sync Ultimate Guitar playlist and lyrics [skip ci]"
+          git push
