@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0a0c">
+  <title>Repertoire — Playlist Manager</title>
+
+  <!-- Typography & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Oswald:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Shared Design Engine -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <style>
+    /* Playlist View Specific Layout */
+    .playlist-container {
+      max-width: 800px;
+      margin: 120px auto 60px auto;
+      padding: 0 24px;
+    }
+
+    .playlist-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .playlist-title {
+      font-family: var(--font-display);
+      font-size: 2.5rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .song-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .song-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-dark);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: border-color var(--transition-fast), transform var(--transition-fast);
+      touch-action: manipulation;
+    }
+
+    .song-item:hover {
+      border-color: var(--border-red);
+    }
+
+    .song-item.dragging {
+      opacity: 0.4;
+      border: 2px dashed var(--accent-red);
+      background: #1e1e24;
+    }
+
+    .song-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .song-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .song-artist {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .key-badge {
+      background: rgba(211, 16, 16, 0.15);
+      border: 1px solid var(--border-red);
+      color: var(--accent-red);
+      font-family: var(--font-mono);
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 0.9rem;
+      user-select: none;
+    }
+
+    .instructions-bar {
+      background: var(--bg-secondary);
+      border-left: 3px solid var(--accent-red);
+      padding: 12px 16px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    }
+  </style>
+</head>
+<body class="no-select">
+
+  <!-- Navigation Bar -->
+  <header>
+    <nav class="navbar">
+      <a href="index.html" class="brand-logo" id="navLogo">BR</a>
+      <ul class="nav-links">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="playlist.html" class="active">Repertoire</a></li>
+        <li><a href="calendar.html">Schedule</a></li>
+        <li><a href="admin.html">Members</a></li>
+        <li><a href="fan.html">Encore Game</a></li>
+      </ul>
+      <a href="rehearsal.html" class="btn-sign-in">SHOW MODE</a>
+    </nav>
+  </header>
+
+  <!-- Main Playlist Interface -->
+  <main class="playlist-container">
+    
+    <div class="playlist-header">
+      <h1 class="playlist-title">BAND REPERTOIRE</h1>
+      <button class="btn-primary" onclick="shufflePlaylist()">
+        <i class="fa-solid fa-shuffle" style="margin-right: 8px;"></i> SHUFFLE
+      </button>
+    </div>
+
+    <div class="instructions-bar">
+      💡 <strong>1-Click:</strong> Open Lyrics (New Tab) | <strong>Double-Click:</strong> Edit Musical Key | <strong>Hold 1000ms:</strong> Drag & Drop Reorder
+    </div>
+
+    <ul id="songList" class="song-list">
+      <!-- Dynamically populated -->
+    </ul>
+  </main>
+
+  <!-- JS Dependencies -->
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+
+  <script>
+    // State Array
+    let playlistState = [];
+
+    // Click/Hold State Handlers
+    let clickCount = 0;
+    let singleClickTimer = null;
+    let holdTimer = null;
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      await loadPlaylist();
+    });
+
+    async function loadPlaylist() {
+      const ul = document.getElementById('songList');
+      ul.innerHTML = '<li style="color:var(--text-muted); text-align:center; padding:40px;">Loading repertoire...</li>';
+
+      try {
+        playlistState = await ApiService.getPlaylist();
+        
+        // Fallback mock data for testing if Google Sheet is empty
+        if (!playlistState || playlistState.length === 0) {
+          playlistState = [
+            { id: "1", title: "Master of Puppets", artist: "Metallica", musicalKey: "E" },
+            { id: "2", title: "Hotel California", artist: "Eagles", musicalKey: "Bm" },
+            { id: "3", title: "Comfortably Numb", artist: "Pink Floyd", musicalKey: "Bm" }
+          ];
+        }
+        renderPlaylist();
+      } catch (err) {
+        ul.innerHTML = '<li style="color:var(--accent-red); text-align:center; padding:40px;">Failed to load playlist. Verify Google Script URL in config.js.</li>';
+      }
+    }
+
+    function renderPlaylist() {
+      const ul = document.getElementById('songList');
+      ul.innerHTML = '';
+
+      playlistState.forEach((song, index) => {
+        const li = document.createElement('li');
+        li.className = 'song-item';
+        li.dataset.id = song.id;
+        li.dataset.index = index;
+
+        li.innerHTML = `
+          <div class="song-info">
+            <span class="song-title">${song.title}</span>
+            <span class="song-artist">${song.artist}</span>
+          </div>
+          <span class="key-badge" onclick="event.stopPropagation(); editKey('${song.id}', '${song.musicalKey}')">${song.musicalKey}</span>
+        `;
+
+        // --- Click vs. Double Click Handler (300ms window) ---
+        li.addEventListener('click', (e) => {
+          clickCount++;
+          if (clickCount === 1) {
+            singleClickTimer = setTimeout(() => {
+              clickCount = 0;
+              openLyricsTab(song.title, song.artist);
+            }, 300);
+          } else if (clickCount === 2) {
+            clearTimeout(singleClickTimer);
+            clickCount = 0;
+            editKey(song.id, song.musicalKey);
+          }
+        });
+
+        // --- 1000ms Long Press Hold Handler for Drag & Drop ---
+        li.addEventListener('mousedown', (e) => startHold(e, li));
+        li.addEventListener('touchstart', (e) => startHold(e, li), { passive: true });
+        
+        li.addEventListener('mouseup', clearHold);
+        li.addEventListener('mouseleave', clearHold);
+        li.addEventListener('touchend', clearHold);
+
+        ul.appendChild(li);
+      });
+    }
+
+    // --- Lyrics Fetch & Render in Black/White Courier New Tab ---
+    async function openLyricsTab(title, artist) {
+      const lyricsWin = window.open('', '_blank');
+      lyricsWin.document.write(`
+        <html>
+          <head>
+            <title>${title} - Lyrics</title>
+            <style>
+              body {
+                background-color: #ffffff;
+                color: #000000;
+                font-family: 'Courier New', Courier, monospace;
+                padding: 40px;
+                white-space: pre-wrap;
+                line-height: 1.6;
+              }
+              h1 { border-bottom: 2px solid #000; padding-bottom: 8px; font-size: 24px; }
+              h2 { font-size: 16px; color: #444; margin-bottom: 24px; }
+            </style>
+          </head>
+          <body>
+            <h1>${title.toUpperCase()}</h1>
+            <h2>ARTIST: ${artist}</h2>
+            <div id="content">Loading lyrics from LRCLIB...</div>
+          </body>
+        </html>
+      `);
+
+      const lyricsText = await ApiService.fetchLyrics(title, artist);
+      const contentDiv = lyricsWin.document.getElementById('content');
+      if (contentDiv) {
+        contentDiv.textContent = lyricsText;
+      }
+    }
+
+    // --- Inline Key Editor ---
+    async function editKey(songId, currentKey) {
+      const newKey = prompt("Enter new Musical Key (e.g. Am, F#, G):", currentKey);
+      if (newKey && newKey.trim() !== "" && newKey !== currentKey) {
+        const song = playlistState.find(s => s.id.toString() === songId.toString());
+        if (song) {
+          song.musicalKey = newKey.trim();
+          renderPlaylist();
+          await ApiService.updateKey(songId, song.musicalKey);
+        }
+      }
+    }
+
+    // --- Long Press & Drag Engine ---
+    function startHold(e, element) {
+      holdTimer = setTimeout(() => {
+        element.draggable = true;
+        element.classList.add('dragging');
+        enableDragAndDrop();
+      }, 1000);
+    }
+
+    function clearHold() {
+      clearTimeout(holdTimer);
+    }
+
+    function enableDragAndDrop() {
+      const ul = document.getElementById('songList');
+
+      ul.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        const draggingItem = ul.querySelector('.dragging');
+        if (!draggingItem) return;
+
+        const siblings = [...ul.querySelectorAll('.song-item:not(.dragging)')];
+        const nextSibling = siblings.find(sibling => e.clientY <= sibling.offsetTop + sibling.offsetHeight / 2);
+        ul.insertBefore(draggingItem, nextSibling);
+      });
+
+      ul.addEventListener('dragend', async (e) => {
+        e.target.draggable = false;
+        e.target.classList.remove('dragging');
+
+        // Extract new array sequence from DOM
+        const updatedSequenceIds = [];
+        ul.querySelectorAll('.song-item').forEach(li => {
+          updatedSequenceIds.push(li.dataset.id);
+        });
+
+        // Re-index local state
+        playlistState.sort((a, b) => updatedSequenceIds.indexOf(a.id.toString()) - updatedSequenceIds.indexOf(b.id.toString()));
+        renderPlaylist();
+
+        // Sync to Google Sheets
+        await ApiService.updateOrder(updatedSequenceIds);
+      });
+    }
+
+    // --- Shuffle Functionality ---
+    function shufflePlaylist() {
+      for (let i = playlistState.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [playlistState[i], playlistState[j]] = [playlistState[j], playlistState[i]];
+      }
+      renderPlaylist();
+    }
+  </script>
+</body>
+</html>
