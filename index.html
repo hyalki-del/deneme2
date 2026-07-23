@@ -2,40 +2,30 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Critical Mobile Viewport Optimization for iOS, Android, macOS & Windows -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0a0c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  
   <title>BLACK RITUAL — Operations Hub</title>
   
-  <!-- Display Font (Oswald) & Body Font (Inter) -->
+  <!-- Typography & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Oswald:wght@700&display=swap" rel="stylesheet">
-  
-  <!-- FontAwesome Icons for Dashboard Cards -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <!-- Shared CSS Stylesheet -->
-  <link rel="stylesheet" href="style.css">
-
-  <!-- Embedded CSS Fallback (Allows instant testing if style.css isn't linked yet) -->
-  <style>
-    /* Inline safety net ensuring image background renders immediately for test */
-    .hero {
-      background: 
-        linear-gradient(90deg, rgba(10,10,12,0.95) 0%, rgba(10,10,12,0.6) 50%, rgba(10,10,12,0.9) 100%),
-        radial-gradient(circle at 65% 40%, rgba(211, 16, 16, 0.35) 0%, transparent 40%),
-        url('band_x.jpg') center/cover no-repeat #0a0a0c;
-    }
-  </style>
+  <!-- Shared Cross-Platform CSS Engine -->
+  <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body class="no-select">
 
-  <!-- Navigation Bar Header -->
+  <!-- Header Navigation -->
   <header>
-    <nav class="navbar">
-      <!-- Band Logo Badge -->
+    <nav class="navbar" aria-label="Main Navigation">
       <a href="index.html" class="brand-logo" id="navLogo">BR</a>
       
-      <!-- Primary Navigation Links -->
       <ul class="nav-links">
         <li><a href="index.html" class="active">Overview</a></li>
         <li><a href="playlist.html">Repertoire</a></li>
@@ -44,12 +34,11 @@
         <li><a href="fan.html">Encore Game</a></li>
       </ul>
 
-      <!-- Action Button for Live Rehearsal Mode -->
       <a href="rehearsal.html" class="btn-sign-in">SHOW MODE</a>
     </nav>
   </header>
 
-  <!-- Hero Section -->
+  <!-- Hero Content -->
   <main class="hero">
     <div class="hero-content">
       <h1 class="hero-title">
@@ -65,10 +54,9 @@
       </div>
     </div>
 
-    <!-- Bottom Feature Grid / Navigation Dock -->
-    <section class="features-dock" aria-label="Band Operations Features">
+    <!-- Features Bottom Dock -->
+    <section class="features-dock" aria-label="Operations Features">
       
-      <!-- Card 1: Playlist / Repertoire -->
       <a href="playlist.html" class="feature-card">
         <i class="fa-solid fa-list-ul feature-icon" aria-hidden="true"></i>
         <div class="feature-info">
@@ -77,7 +65,6 @@
         </div>
       </a>
 
-      <!-- Card 2: Calendar / Availability Schedule -->
       <a href="calendar.html" class="feature-card">
         <i class="fa-regular fa-calendar-days feature-icon" aria-hidden="true"></i>
         <div class="feature-info">
@@ -86,7 +73,6 @@
         </div>
       </a>
 
-      <!-- Card 3: Band Admin / Member Directory -->
       <a href="admin.html" class="feature-card">
         <i class="fa-solid fa-users feature-icon" aria-hidden="true"></i>
         <div class="feature-info">
@@ -95,7 +81,6 @@
         </div>
       </a>
 
-      <!-- Card 4: Fan Encore Voting Game -->
       <a href="fan.html" class="feature-card">
         <i class="fa-solid fa-fire feature-icon" aria-hidden="true"></i>
         <div class="feature-info">
@@ -107,21 +92,7 @@
     </section>
   </main>
 
-  <!-- External Configuration Script -->
-  <script src="config.js"></script>
-
-  <!-- Self-contained Test Driver Script -->
-  <script>
-    // Fallback script execution to verify UI rendering even before config.js is populated
-    document.addEventListener("DOMContentLoaded", () => {
-      if (typeof BAND_CONFIG !== "undefined") {
-        document.getElementById("navLogo").textContent = BAND_CONFIG.brandInitials || "BR";
-        document.getElementById("heroTagline1").textContent = BAND_CONFIG.taglineLine1 || "FORGE THE SOUND.";
-        document.getElementById("heroTagline2").textContent = BAND_CONFIG.taglineLine2 || "LIVE THE MISSION.";
-        document.getElementById("heroSubtext").textContent = BAND_CONFIG.subtext || "Operations for bands who rehearse hard and perform harder.";
-      }
-      console.log("Index HTML successfully loaded with Dark Industrial Rock theme.");
-    });
-  </script>
+  <!-- Configuration Driver -->
+  <script src="js/config.js"></script>
 </body>
 </html>
