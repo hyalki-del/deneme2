@@ -4,42 +4,65 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Band Admin Setup</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 40px auto; max-width: 600px; padding: 0 20px; line-height: 1.6; }
+    h1 { border-bottom: 2px solid #333; padding-bottom: 10px; }
+    .form-group { margin-bottom: 20px; }
+    label { font-weight: bold; display: block; margin-bottom: 5px; }
+    input[type="text"], input[type="url"], input[type="password"] { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+    button { background-color: #0066cc; color: white; padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: bold; width: 100%; }
+    button:hover { background-color: #0052a3; }
+    #statusMessage { margin-top: 20px; padding: 12px; border-radius: 4px; font-weight: bold; }
+    .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+  </style>
 </head>
 <body>
-  <h1>🎸 Band Setup & Admin Portal</h1>
+
+  <h1>🎸 Band Admin Configuration</h1>
+  <p>Fill out the fields below to update <code>config.json</code> in your GitHub repository root.</p>
 
   <form id="adminForm">
-    <p>
-      <label for="bandName">Band Name:</label><br>
-      <input type="text" id="bandName" name="bandName" required placeholder="e.g. The Midnight Echoes">
-    </p>
+    <div class="form-group">
+      <label for="githubToken">GitHub Personal Access Token (PAT):</label>
+      <input type="password" id="githubToken" required placeholder="github_pat_11A...">
+      <small style="color: #666;">Requires <code>repo</code> or <code>contents:write</code> scope to update config.json.</small>
+    </div>
 
-    <p>
-      <label for="bandMembers">Band Member Names (comma separated):</label><br>
-      <input type="text" id="bandMembers" name="bandMembers" required placeholder="John, Sarah, Alex">
-    </p>
+    <div class="form-group">
+      <label for="repoOwner">GitHub Username / Org Owner:</label>
+      <input type="text" id="repoOwner" required placeholder="e.g. my-username">
+    </div>
 
-    <p>
-      <label for="bandPhotos">Band Photos URLs (comma separated, optional):</label><br>
-      <input type="text" id="bandPhotos" name="bandPhotos" placeholder="https://.../photo1.jpg, https://.../photo2.jpg">
-    </p>
+    <div class="form-group">
+      <label for="repoName">Repository Name:</label>
+      <input type="text" id="repoName" required placeholder="e.g. my-band-app">
+    </div>
 
-    <p>
-      <label for="googleSheetsDeployUrl">Google Sheets Deploy Web Link:</label><br>
-      <input type="url" id="googleSheetsDeployUrl" name="googleSheetsDeployUrl" required placeholder="https://script.google.com/macros/s/.../exec">
-    </p>
+    <div class="form-group">
+      <label for="bandName">Band Name:</label>
+      <input type="text" id="bandName" required placeholder="e.g. The Midnight Echoes">
+    </div>
 
-    <p>
-      <label for="ugPlaylistUrl">Ultimate Guitar Playlist Link:</label><br>
-      <input type="url" id="ugPlaylistUrl" name="ugPlaylistUrl" required placeholder="https://www.ultimate-guitar.com/user/playlist/...">
-    </p>
+    <div class="form-group">
+      <label for="bandMembers">Band Members (comma separated):</label>
+      <input type="text" id="bandMembers" required placeholder="John, Sarah, Alex">
+    </div>
 
-    <p>
-      <button type="submit" id="submitBtn">Save Configuration & Fetch Playlist</button>
-    </p>
+    <div class="form-group">
+      <label for="googleSheetsDeployUrl">Google Sheets Web App URL:</label>
+      <input type="url" id="googleSheetsDeployUrl" placeholder="https://script.google.com/macros/s/.../exec">
+    </div>
+
+    <div class="form-group">
+      <label for="ugPlaylistUrl">Ultimate Guitar Playlist Link:</label>
+      <input type="url" id="ugPlaylistUrl" required placeholder="https://www.ultimate-guitar.com/user/playlist/...">
+    </div>
+
+    <button type="submit" id="submitBtn">Save Directly to config.json</button>
   </form>
 
-  <div id="statusMessage"></div>
+  <div id="statusMessage" style="display: none;"></div>
 
   <script src="js/admin.js"></script>
 </body>
