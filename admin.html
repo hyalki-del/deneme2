@@ -3,43 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Setup</title>
+  <title>Band Admin Setup</title>
 </head>
 <body>
-  <h1>Band Configuration</h1>
+  <h1>🎸 Band Setup & Admin Portal</h1>
 
   <form id="adminForm">
     <p>
       <label for="bandName">Band Name:</label><br>
-      <input type="text" id="bandName" name="bandName" required>
+      <input type="text" id="bandName" name="bandName" required placeholder="e.g. The Midnight Echoes">
     </p>
 
     <p>
       <label for="bandMembers">Band Member Names (comma separated):</label><br>
-      <input type="text" id="bandMembers" name="bandMembers" placeholder="John, Sarah, Alex" required>
+      <input type="text" id="bandMembers" name="bandMembers" required placeholder="John, Sarah, Alex">
     </p>
 
     <p>
-      <label for="bandPhotos">Band Photos (optional):</label><br>
-      <input type="file" id="bandPhotos" name="bandPhotos" accept="image/*" multiple>
+      <label for="bandPhotos">Band Photos URLs (comma separated, optional):</label><br>
+      <input type="text" id="bandPhotos" name="bandPhotos" placeholder="https://.../photo1.jpg, https://.../photo2.jpg">
     </p>
 
     <p>
       <label for="googleSheetsDeployUrl">Google Sheets Deploy Web Link:</label><br>
-      <input type="url" id="googleSheetsDeployUrl" name="googleSheetsDeployUrl" required>
+      <input type="url" id="googleSheetsDeployUrl" name="googleSheetsDeployUrl" required placeholder="https://script.google.com/macros/s/.../exec">
     </p>
 
     <p>
-      <label for="ugPlaylistUrl">UG Playlist Link:</label><br>
-      <input type="url" id="ugPlaylistUrl" name="ugPlaylistUrl" required>
+      <label for="ugPlaylistUrl">Ultimate Guitar Playlist Link:</label><br>
+      <input type="url" id="ugPlaylistUrl" name="ugPlaylistUrl" required placeholder="https://www.ultimate-guitar.com/user/playlist/...">
     </p>
 
     <p>
-      <button type="submit">Save Configuration</button>
+      <button type="submit" id="submitBtn">Save Configuration & Fetch Playlist</button>
     </p>
   </form>
 
-  <div id="status"></div>
+  <div id="statusMessage"></div>
 
   <script src="js/admin.js"></script>
 </body>
