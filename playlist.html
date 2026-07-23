@@ -21,7 +21,7 @@
       border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.95rem; transition: background-color 0.2s;
     }
     .btn-save:hover { background-color: var(--accent-hover); }
-    #saveStatus { font-size: 0.9rem; font-weight: bold; color: var(--accent-color); }
+    #saveStatus { font-size: 0.9rem; font-weight: bold; color: var(--accent-color); min-height: 20px; }
     
     /* Modal Styles */
     .modal-backdrop {
@@ -56,7 +56,7 @@
     
     <div class="toolbar">
       <div class="stats" id="songStats">Loading songs...</div>
-      <button id="saveOrderBtn" class="btn-save">💾 Save Order & Keys to Google Sheets</button>
+      <button id="saveOrderBtn" class="btn-save">💾 Save Setlist Order</button>
     </div>
     <div id="saveStatus" style="margin-bottom: 15px;"></div>
 
@@ -76,7 +76,7 @@
         </div>
         <div class="modal-actions">
           <button type="button" id="cancelModalBtn" class="btn-secondary">Cancel</button>
-          <button type="submit" class="btn-primary" style="width: auto;">Apply Key</button>
+          <button type="submit" class="btn-primary" style="width: auto;">Apply & Save</button>
         </div>
       </form>
     </div>
@@ -174,23 +174,28 @@
 
         songStats.textContent = `Double click row to edit key • Drag rows to reorder (${songsToRender.length} songs)`;
 
-        songContainer.innerHTML = songsToRender.map((song, index) => `
-          <div class="song-card" draggable="true" data-index="${index}" data-title="${escapeHtml(song.title)}">
-            <div class="song-details">
-              <span class="song-id">#${index + 1}</span>
-              <div class="song-text">
-                <h3>${escapeHtml(song.title)}</h3>
-                <p>${escapeHtml(song.artist)}</p>
+        songContainer.innerHTML = songsToRender.map((song, index) => {
+          // Strict YouTube search query using song name and artist name only
+          const youtubeQuery = encodeURIComponent(`${song.title} ${song.artist}`);
+
+          return `
+            <div class="song-card" draggable="true" data-index="${index}" data-title="${escapeHtml(song.title)}">
+              <div class="song-details">
+                <span class="song-id">#${index + 1}</span>
+                <div class="song-text">
+                  <h3>${escapeHtml(song.title)}</h3>
+                  <p>${escapeHtml(song.artist)}</p>
+                </div>
+              </div>
+              <div class="song-meta">
+                <span class="song-key" title="Song Key">${escapeHtml(song.key || '-')}</span>
+                <a href="https://www.youtube.com/results?search_query=${youtubeQuery}" target="_blank" class="btn-youtube">
+                  ▶ Play
+                </a>
               </div>
             </div>
-            <div class="song-meta">
-              <span class="song-key" title="Song Key">${escapeHtml(song.key || '-')}</span>
-              <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(song.artist + ' ' + song.title + ' guitar backing track chord')}" target="_blank" class="btn-youtube">
-                ▶ Play
-              </a>
-            </div>
-          </div>
-        `).join('');
+          `;
+        }).join('');
 
         initDragAndDrop();
         initDoubleClickEvents();
@@ -239,7 +244,7 @@
         });
       }
 
-      // Save Order & Keys to Google Sheets
+      // Explicit Save Order Button Action
       saveOrderBtn.addEventListener('click', async () => {
         const cardElements = songContainer.querySelectorAll('.song-card');
         const itemsToSave = [];
@@ -258,7 +263,7 @@
           return;
         }
 
-        saveStatus.textContent = '⏳ Saving setlist order & keys to Google Sheets...';
+        saveStatus.textContent = '⏳ Saving setlist order to Google Sheets...';
         try {
           await fetch(sheetsDeployUrl, {
             method: 'POST',
@@ -268,11 +273,11 @@
               items: itemsToSave
             })
           });
-          saveStatus.textContent = '✅ Order & keys successfully saved to Google Sheets!';
+          saveStatus.textContent = '✅ Setlist order successfully saved to Google Sheets!';
           setTimeout(() => { saveStatus.textContent = ''; }, 4000);
         } catch (err) {
-          console.error('Failed saving state:', err);
-          saveStatus.textContent = '❌ Error saving to Google Sheets.';
+          console.error('Failed saving order:', err);
+          saveStatus.textContent = '❌ Error saving order.';
         }
       });
 
@@ -297,7 +302,8 @@
         editModal.style.display = 'none';
       });
 
-      editForm.addEventListener('submit', (e) => {
+      // Key Edit Apply Button: Immediately saves to Google Sheets
+      editForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!currentEditingSongTitle) return;
 
@@ -313,7 +319,38 @@
 
         renderSongs(allSongs);
         editModal.style.display = 'none';
-        saveStatus.textContent = `💡 Key updated locally for "${currentEditingSongTitle}". Click "Save Order & Keys" to commit to Google Sheets.`;
+
+        if (!sheetsDeployUrl) return;
+
+        saveStatus.textContent = `⏳ Saving key for "${currentEditingSongTitle}" to Google Sheets...`;
+        
+        // Build current full list of items to persist with the updated key
+        const cardElements = songContainer.querySelectorAll('.song-card');
+        const itemsToSave = [];
+        cardElements.forEach(card => {
+          const title = card.getAttribute('data-title');
+          const songObj = allSongs.find(s => s.title === title);
+          itemsToSave.push({
+            title: title,
+            key: songObj ? songObj.key : ''
+          });
+        });
+
+        try {
+          await fetch(sheetsDeployUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({
+              action: 'saveCustomOrderWithKeys',
+              items: itemsToSave
+            })
+          });
+          saveStatus.textContent = `✅ Key for "${currentEditingSongTitle}" successfully saved to Google Sheets!`;
+          setTimeout(() => { saveStatus.textContent = ''; }, 4000);
+        } catch (err) {
+          console.error('Failed saving key metadata:', err);
+          saveStatus.textContent = '❌ Error saving key to Google Sheets.';
+        }
       });
 
       searchInput.addEventListener('input', (e) => {
