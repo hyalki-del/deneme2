@@ -1,0 +1,365 @@
+/* ==========================================================================
+   DESIGN SYSTEM TOKENS & CROSS-PLATFORM RESET
+   ========================================================================== */
+:root {
+  /* Color Palette */
+  --bg-primary: #0a0a0c;
+  --bg-secondary: #121215;
+  --bg-card: rgba(18, 18, 21, 0.85);
+  
+  --accent-red: #d31010;
+  --accent-red-hover: #ff1e1e;
+  --accent-red-glow: rgba(211, 16, 16, 0.35);
+  
+  --text-main: #f0f0f5;
+  --text-muted: #8e8e9e;
+  --text-dim: #505060;
+  
+  --border-dark: rgba(255, 255, 255, 0.08);
+  --border-red: rgba(211, 16, 16, 0.3);
+
+  /* Fluid Typography using CSS Clamp (Device Agnostic) */
+  --font-display: 'Oswald', 'Impact', 'Arial Black', sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  --font-mono: 'Courier New', Courier, monospace;
+
+  /* Touch & Ergonomics */
+  --touch-target-min: 44px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  
+  /* Transitions */
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Universal Box Sizing & Touch Tap Highlight Reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent; /* Eliminates Android/iOS tap gray flash */
+}
+
+/* Root Document Optimization */
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  height: 100%;
+  background-color: var(--bg-primary);
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-main);
+  font-family: var(--font-body);
+  line-height: 1.5;
+  min-height: 100vh;
+  min-height: 100dvh; /* Dynamic Viewport Height for iOS Safari / Mobile Chrome */
+  overflow-x: hidden;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  
+  /* Handle iOS Safe Area Insets (iPhone Notch / Home Bar) */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Prevent unwanted OS text selection during touch hold gestures */
+.no-select {
+  -webkit-touch-callout: none; /* iOS Safari touch popups */
+  -webkit-user-select: none;   /* Safari */
+  -khtml-user-select: none;
+  -moz-user-select: none;      /* Firefox */
+  -ms-user-select: none;       /* IE/Edge */
+  user-select: none;           /* Standard */
+}
+
+/* ==========================================================================
+   NAVIGATION BAR (Responsive Flexbox & Glassmorphism)
+   ========================================================================== */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 48px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  background: linear-gradient(180deg, rgba(10, 10, 12, 0.9) 0%, rgba(10, 10, 12, 0) 100%);
+}
+
+.brand-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--touch-target-min);
+  min-height: var(--touch-target-min);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid var(--accent-red);
+  color: var(--accent-red);
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 0 16px var(--accent-red-glow);
+  transition: transform var(--transition-fast);
+}
+
+.brand-logo:active {
+  transform: scale(0.95);
+}
+
+.nav-links {
+  display: flex;
+  gap: 32px;
+  list-style: none;
+}
+
+.nav-links a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 8px 4px;
+  min-height: var(--touch-target-min);
+  display: inline-flex;
+  align-items: center;
+  transition: color var(--transition-fast);
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+  color: var(--text-main);
+  border-bottom: 2px solid var(--accent-red);
+}
+
+.btn-sign-in {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--touch-target-min);
+  padding: 10px 24px;
+  border: 1px solid var(--accent-red);
+  color: var(--accent-red);
+  background: transparent;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+  cursor: pointer;
+}
+
+.btn-sign-in:hover, .btn-sign-in:active {
+  background: var(--accent-red);
+  color: #fff;
+  box-shadow: 0 0 20px var(--accent-red-glow);
+}
+
+/* ==========================================================================
+   HERO SECTION (Fluid Layouts & Aspect Ratio Handling)
+   ========================================================================== */
+.hero {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 120px 48px 40px 48px;
+  background: 
+    linear-gradient(90deg, rgba(10,10,12,0.95) 0%, rgba(10,10,12,0.65) 50%, rgba(10,10,12,0.95) 100%),
+    radial-gradient(circle at 65% 40%, var(--accent-red-glow) 0%, transparent 45%),
+    url('../assets/images/hero-bg.jpg') center/cover no-repeat #0a0a0c;
+}
+
+.hero-content {
+  max-width: 700px;
+  margin-top: auto;
+  margin-bottom: 40px;
+  z-index: 2;
+}
+
+/* Fluid Heading Scaling across screens using clamp() */
+.hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(2.8rem, 7vw, 5.5rem);
+  line-height: 0.95;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.hero-title span.white { color: var(--text-main); display: block; }
+.hero-title span.red { color: var(--accent-red); display: block; text-shadow: 0 0 24px var(--accent-red-glow); }
+
+.hero-subtitle {
+  color: var(--text-muted);
+  font-size: clamp(0.95rem, 2vw, 1.2rem);
+  margin-bottom: 32px;
+  max-width: 520px;
+}
+
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--touch-target-min);
+  background: var(--accent-red);
+  color: #fff;
+  padding: 14px 36px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 4px 20px var(--accent-red-glow);
+  transition: all var(--transition-fast);
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary:hover, .btn-primary:active {
+  background: var(--accent-red-hover);
+  transform: translateY(-2px);
+}
+
+.btn-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-target-min);
+  color: var(--text-main);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  transition: color var(--transition-fast);
+  padding: 0 8px;
+}
+
+.btn-link:hover { color: var(--accent-red); }
+
+/* ==========================================================================
+   FEATURE DOCK / GRID (Auto-Fit Responsive Grid Layout)
+   ========================================================================== */
+.features-dock {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  z-index: 2;
+  width: 100%;
+}
+
+.feature-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-dark);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px); /* Safari support */
+  text-decoration: none;
+  transition: all var(--transition-smooth);
+  min-height: 88px;
+}
+
+.feature-card:hover {
+  border-color: var(--border-red);
+  transform: translateY(-4px);
+  background: rgba(25, 25, 30, 0.9);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+}
+
+.feature-icon {
+  color: var(--accent-red);
+  font-size: 1.6rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.feature-info h3 {
+  color: var(--text-main);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.feature-info p {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+/* ==========================================================================
+   MEDIA QUERIES (Mobile, Tablet, Desktop Ergonomics)
+   ========================================================================== */
+
+/* Tablets & Small Laptops */
+@media (max-width: 1024px) {
+  .navbar { padding: 16px 32px; }
+  .hero { padding: 100px 32px 32px 32px; }
+}
+
+/* Mobile Devices (iOS iPhones, Android Smartphones) */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 16px 20px;
+  }
+  
+  /* Hide text links on small screens to prioritize clean touch experience */
+  .nav-links {
+    display: none; 
+  }
+
+  .hero {
+    padding: 90px 20px 24px 20px;
+  }
+
+  .hero-content {
+    margin-bottom: 24px;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .btn-primary, .btn-link {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .features-dock {
+    grid-template-columns: 1fr; /* Single column stack for mobile touch readability */
+    gap: 12px;
+  }
+
+  .feature-card {
+    padding: 16px;
+  }
+}
