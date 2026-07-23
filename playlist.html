@@ -3,8 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🎸 Band Playlist Dashboard</title>
+  <title>🎸 Band Repertoire Setlist</title>
   <link rel="stylesheet" href="css/style.css">
+  <style>
+    .song-card {
+      cursor: grab;
+      user-select: none;
+    }
+    .song-card:active {
+      cursor: grabbing;
+    }
+    .song-card.dragging {
+      opacity: 0.4;
+      border: 2px dashed var(--accent-color);
+    }
+    .btn-youtube {
+      background-color: #ff0000;
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 0.85rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: background-color 0.2s;
+    }
+    .btn-youtube:hover {
+      background-color: #cc0000;
+    }
+    #saveStatus {
+      margin-bottom: 15px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      color: var(--accent-color);
+      min-height: 20px;
+    }
+  </style>
 </head>
 <body>
 
@@ -15,16 +51,17 @@
         <a href="index.html">Dashboard</a>
         <a href="admin.html">Admin Setup</a>
       </div>
-      <h1 id="bandTitle">🎸 Band Playlist</h1>
+      <h1 id="bandTitle">🎸 Band Repertoire</h1>
       <div class="meta-info" id="bandMembers">Loading band info...</div>
     </header>
 
     <input type="text" id="searchInput" class="search-bar" placeholder="🔍 Search by song title or artist...">
     
+    <div id="saveStatus"></div>
     <div class="stats" id="songStats">Loading songs...</div>
 
     <div id="songContainer" class="song-list">
-      <div class="loading">Loading repertoire from playlist.json...</div>
+      <div class="loading">Loading repertoire...</div>
     </div>
   </div>
 
@@ -35,8 +72,10 @@
       const songStats = document.getElementById('songStats');
       const bandTitle = document.getElementById('bandTitle');
       const bandMembers = document.getElementById('bandMembers');
+      const saveStatus = document.getElementById('saveStatus');
 
       let allSongs = [];
+      let sheetsDeployUrl = '';
 
       try {
         const [configRes, playlistRes] = await Promise.all([
@@ -46,38 +85,68 @@
 
         if (configRes && configRes.ok) {
           const config = await configRes.json();
-          if (config.bandName) bandTitle.textContent = `🎸 ${config.bandName} Playlist`;
-          if (config.bandMembers && Array.isArray(config.bandMembers)) {
-            bandMembers.textContent = `Members: ${config.bandMembers.join(', ')}`;
-          }
-        } else {
-          bandMembers.textContent = 'Repertoire Dashboard';
+          if (config.bandName) bandTitle.textContent = `🎸 ${config.bandName} Setlist`;
+          if (config.bandMembers) bandMembers.textContent = `Members: ${config.bandMembers.join(', ')}`;
+          if (config.googleSheetsDeployUrl) sheetsDeployUrl = config.googleSheetsDeployUrl;
         }
 
         if (!playlistRes.ok) throw new Error('Failed to load playlist.json');
         allSongs = await playlistRes.json();
 
+        // Try fetching custom sort order from Google Sheets if URL exists
+        if (sheetsDeployUrl) {
+          try {
+            const sheetRes = await fetch(`${sheetsDeployUrl}?action=getCustomOrder`);
+            const sheetData = await sheetRes.json();
+            if (sheetData && Array.isArray(sheetData.order)) {
+              // Reorder allSongs based on stored IDs or titles from Sheets
+              allSongs = sortSongsByCustomOrder(allSongs, sheetData.order);
+            }
+          } catch (err) {
+            console.warn('Could not fetch custom sheet order, using default playlist.json order.', err);
+          }
+        }
+
         renderSongs(allSongs);
 
       } catch (error) {
         console.error('Initialization Error:', error);
-        songContainer.innerHTML = `<div class="error">❌ Error loading playlist data: ${error.message}<br><small>Ensure playlist.json exists in the root directory.</small></div>`;
-        songStats.textContent = '';
+        songContainer.innerHTML = `<div class="error">❌ Error loading data: ${error.message}</div>`;
+      }
+
+      function sortSongsByCustomOrder(songs, orderList) {
+        const songMap = new Map(songs.map(s => [s.title.toLowerCase().trim(), s]));
+        const sorted = [];
+        
+        // Add items in custom order
+        orderList.forEach(title => {
+          const key = title.toLowerCase().trim();
+          if (songMap.has(key)) {
+            sorted.push(songMap.get(key));
+            songMap.delete(key);
+          }
+        });
+        
+        // Append any new songs not present in the saved order list
+        songMap.forEach(s => sorted.push(s));
+        
+        // Re-index IDs sequentially
+        return sorted.map((s, index) => ({ ...s, id: index + 1 }));
       }
 
       function renderSongs(songsToRender) {
         if (!songsToRender || songsToRender.length === 0) {
-          songContainer.innerHTML = `<div class="empty">No songs found in repertoire.</div>`;
-          songStats.textContent = 'Showing 0 of 0 songs';
+          songContainer.innerHTML = `<div class="empty">No songs found.</div>`;
+          songStats.textContent = 'Showing 0 songs';
           return;
         }
 
-        songStats.textContent = `Showing ${songsToRender.length} of ${allSongs.length} songs`;
+        songStats.textContent = `Drag rows up/down to reorder setlist (${songsToRender.length} songs)`;
 
-        songContainer.innerHTML = songsToRender.map(song => `
-          <div class="song-card">
+        songContainer.innerHTML = songsToRender.map((song, index) => `
+          <div class="song-card" draggable="true" data-index="${index}" data-title="${escapeHtml(song.title)}">
             <div class="song-details">
-              <span class="song-id">#${song.id}</span>
+              <span class="song-id">#${index + 1}</span>
               <div class="song-text">
                 <h3>${escapeHtml(song.title)}</h3>
                 <p>${escapeHtml(song.artist)}</p>
@@ -85,10 +154,86 @@
             </div>
             <div class="song-meta">
               ${song.key ? `<span class="song-key" title="Song Key">${escapeHtml(song.key)}</span>` : ''}
-              ${song.ugUrl ? `<a href="${escapeHtml(song.ugUrl)}" target="_blank" class="btn-primary" style="padding: 6px 14px; font-size: 0.9rem; width: auto;">Tab ↗</a>` : ''}
+              <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(song.artist + ' ' + song.title + ' guitar backing track chord')}" target="_blank" class="btn-youtube">
+                ▶ Play
+              </a>
             </div>
           </div>
         `).join('');
+
+        initDragAndDrop();
+      }
+
+      // Drag and Drop State Logic
+      function initDragAndDrop() {
+        const cards = songContainer.querySelectorAll('.song-card');
+        
+        cards.forEach(card => {
+          card.addEventListener('dragstart', () => {
+            card.classList.add('dragging');
+          });
+
+          card.addEventListener('dragend', () => {
+            card.classList.remove('dragging');
+            updateSongOrderAndSave();
+          });
+        });
+
+        songContainer.addEventListener('dragover', e => {
+          e.preventDefault();
+          const draggingCard = document.querySelector('.dragging');
+          const afterElement = getDragAfterElement(songContainer, e.clientY);
+          if (afterElement == null) {
+            songContainer.appendChild(draggingCard);
+          } else {
+            songContainer.insertBefore(draggingCard, afterElement);
+          }
+        });
+      }
+
+      function getDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll('.song-card:not(.dragging)')];
+        return draggableElements.reduce((closest, child) => {
+          const box = child.getBoundingClientRect();
+          const offset = y - box.top - box.height / 2;
+          if (offset < 0 && offset > closest.offset) {
+            return { offset: offset, element: child };
+          } else {
+            return closest;
+          }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+      }
+
+      async function updateSongOrderAndSave() {
+        const cardElements = songContainer.querySelectorAll('.song-card');
+        const newOrderTitles = [];
+        
+        cardElements.forEach((card, idx) => {
+          const title = card.getAttribute('data-title');
+          newOrderTitles.push(title);
+          // Update visual ID index tag on screen
+          const idSpan = card.querySelector('.song-id');
+          if (idSpan) idSpan.textContent = `#${idx + 1}`;
+        });
+
+        if (!sheetsDeployUrl) return;
+
+        saveStatus.textContent = '⏳ Saving new order to Google Sheets...';
+        try {
+          await fetch(sheetsDeployUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({
+              action: 'saveCustomOrder',
+              order: newOrderTitles
+            })
+          });
+          saveStatus.textContent = '✅ Reorder saved successfully to Google Sheets!';
+          setTimeout(() => { saveStatus.textContent = ''; }, 3000);
+        } catch (err) {
+          console.error('Failed saving order:', err);
+          saveStatus.textContent = '❌ Error saving order to Google Sheets.';
+        }
       }
 
       searchInput.addEventListener('input', (e) => {
@@ -102,12 +247,7 @@
 
       function escapeHtml(str) {
         if (!str) return '';
-        return String(str)
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;')
-          .replace(/'/g, '&#039;');
+        return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
       }
     });
   </script>
