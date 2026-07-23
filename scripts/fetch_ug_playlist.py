@@ -14,7 +14,7 @@ def is_tab_item(obj):
     # Check if data is nested inside obj['tab']
     target = obj.get('tab') if isinstance(obj.get('tab'), dict) else obj
     
-    # Check for core UG tab identifier keys
+    # Core UG tab identifier keys
     tab_keys = {'song_name', 'songName', 'song_title', 'tab_url', 'tabUrl', 'artist_name', 'artistName', 'song_id', 'tab_id'}
     return any(k in target for k in tab_keys)
 
@@ -29,7 +29,6 @@ def find_tab_array(data):
     page_data = data.get('store', {}).get('page', {}).get('data', {})
     
     if isinstance(page_data, dict):
-        # Known UG tab container keys
         candidate_containers = [
             page_data.get('playlist'),
             page_data.get('tabs'),
@@ -70,7 +69,7 @@ def find_tab_array(data):
 
 def parse_ug_json_payload(page_html):
     """
-    Extracts embedded JSON state payload from UG HTML source.
+    Extracts embedded JSON state payload from UG HTML source using multiple fallbacks.
     """
     # Strategy 1: js-store data-content
     js_store_match = re.search(r'class=["\']js-store["\'][^>]*data-content=["\'](.*?)["\']', page_html, re.DOTALL)
@@ -112,7 +111,7 @@ def parse_ug_json_payload(page_html):
 def fetch_ug_data():
     print("🚀 --- Starting Ultimate Guitar Sync Pipeline ---", flush=True)
 
-    # 1. Read ugPlaylistUrl strictly from root config.json
+    # 1. Read configuration strictly from root config.json
     try:
         with open('config.json', 'r') as f:
             config = json.load(f)
@@ -124,6 +123,7 @@ def fetch_ug_data():
         sys.exit(1)
 
     ug_url = config.get('ugPlaylistUrl', '').strip()
+    sheets_url = config.get('googleSheetsDeployUrl', '').strip()
 
     if not ug_url or not ug_url.startswith("http"):
         print("❌ CRITICAL ERROR: 'ugPlaylistUrl' is empty or invalid in config.json.", flush=True)
@@ -155,14 +155,6 @@ def fetch_ug_data():
 
     if payload:
         raw_tabs = find_tab_array(payload)
-        
-        # Diagnostic logging if no tabs match
-        if not raw_tabs:
-            print("⚠️ Diagnostic: 0 items matched finder. Inspecting store.page.data structure...", flush=True)
-            page_data = payload.get('store', {}).get('page', {}).get('data', {})
-            if isinstance(page_data, dict):
-                print(f"ℹ️ Keys found in store.page.data: {list(page_data.keys())}", flush=True)
-
         print(f"🔍 Extracted {len(raw_tabs)} raw tab entries from payload tree.", flush=True)
 
         for idx, item in enumerate(raw_tabs):
@@ -207,11 +199,27 @@ def fetch_ug_data():
                     "ugUrl": tab_url
                 })
 
-    # 4. Write result
+    # 4. Write result to local playlist.json
     with open('playlist.json', 'w') as f:
         json.dump(songs, f, indent=2)
 
-    print(f"💾 Successfully written {len(songs)} songs to playlist.json. Pipeline complete!", flush=True)
+    print(f"💾 Successfully written {len(songs)} songs to playlist.json.", flush=True)
+
+    # 5. Push synchronized repertoire data to Google Sheets web app (if configured)
+    if sheets_url and sheets_url.startswith("http"):
+        print("📡 Syncing scraped repertoire with Google Sheets backend...", flush=True)
+        try:
+            sync_resp = requests.post(
+                sheets_url,
+                headers={'Content-Type': 'text/plain;charset=utf-8'},
+                json={'action': 'syncPipelineSongs', 'songs': songs},
+                timeout=15
+            )
+            print(f"✅ Google Sheets Sync Status Code: {sync_resp.status_code}", flush=True)
+        except Exception as err:
+            print(f"⚠️ Warning: Could not sync song order with Google Sheets: {err}", flush=True)
+
+    print("🚀 Pipeline execution completed successfully!", flush=True)
 
 if __name__ == '__main__':
     fetch_ug_data()
