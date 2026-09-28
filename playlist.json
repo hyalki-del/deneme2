@@ -211,55 +211,41 @@
   },
   {
     "id": 31,
-    "title": "Eye Of The Tiger",
-    "artist": "Survivor",
-    "key": "Cm",
-    "ugUrl": "https://tabs.ultimate-guitar.com/tab/survivor/eye-of-the-tiger-official-1916231"
-  },
-  {
-    "id": 32,
     "title": "The Final Countdown",
     "artist": "Europe",
     "key": "F#m",
     "ugUrl": "https://tabs.ultimate-guitar.com/tab/europe/the-final-countdown-official-1911381"
   },
   {
-    "id": 33,
+    "id": 32,
     "title": "Burn",
     "artist": "Deep Purple",
     "key": "Gm",
     "ugUrl": "https://tabs.ultimate-guitar.com/tab/deep-purple/burn-official-2480706"
   },
   {
-    "id": 34,
+    "id": 33,
     "title": "In These Arms",
     "artist": "Bon Jovi",
     "key": "E",
     "ugUrl": "https://tabs.ultimate-guitar.com/tab/bon-jovi/in-these-arms-official-4132021"
   },
   {
-    "id": 35,
+    "id": 34,
     "title": "For Whom The Bell Tolls",
     "artist": "Metallica",
     "key": "Em",
     "ugUrl": "https://tabs.ultimate-guitar.com/tab/metallica/for-whom-the-bell-tolls-official-1936233"
   },
   {
-    "id": 36,
-    "title": "Diamonds And Rust",
-    "artist": "Judas Priest",
-    "key": "Em",
-    "ugUrl": "https://tabs.ultimate-guitar.com/tab/judas-priest/diamonds-and-rust-official-3331547"
-  },
-  {
-    "id": 37,
+    "id": 35,
     "title": "Fear Of The Dark",
     "artist": "Iron Maiden",
     "key": "Dm",
     "ugUrl": "https://tabs.ultimate-guitar.com/tab/iron-maiden/fear-of-the-dark-official-1936207"
   },
   {
-    "id": 38,
+    "id": 36,
     "title": "Stormbringer",
     "artist": "Deep Purple",
     "key": "Em",
