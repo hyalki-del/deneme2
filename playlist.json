@@ -232,23 +232,16 @@
   },
   {
     "id": 34,
-    "title": "For Whom The Bell Tolls",
-    "artist": "Metallica",
-    "key": "Em",
-    "ugUrl": "https://tabs.ultimate-guitar.com/tab/metallica/for-whom-the-bell-tolls-official-1936233"
-  },
-  {
-    "id": 35,
-    "title": "Fear Of The Dark",
-    "artist": "Iron Maiden",
-    "key": "Dm",
-    "ugUrl": "https://tabs.ultimate-guitar.com/tab/iron-maiden/fear-of-the-dark-official-1936207"
-  },
-  {
-    "id": 36,
     "title": "Stormbringer",
     "artist": "Deep Purple",
     "key": "Em",
     "ugUrl": "https://tabs.ultimate-guitar.com/tab/deep-purple/stormbringer-official-4033384"
+  },
+  {
+    "id": 35,
+    "title": "No Easy Way Out",
+    "artist": "Robert Tepper",
+    "key": "Em",
+    "ugUrl": "https://tabs.ultimate-guitar.com/tab/robert-tepper/no-easy-way-out-official-3908369"
   }
 ]
