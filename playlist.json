@@ -218,41 +218,27 @@
   },
   {
     "id": 32,
-    "title": "In These Arms",
-    "artist": "Bon Jovi",
-    "key": "E",
-    "ugUrl": "https://tabs.ultimate-guitar.com/tab/bon-jovi/in-these-arms-official-4132021"
-  },
-  {
-    "id": 33,
-    "title": "Stormbringer",
-    "artist": "Deep Purple",
-    "key": "Em",
-    "ugUrl": "https://tabs.ultimate-guitar.com/tab/deep-purple/stormbringer-official-4033384"
-  },
-  {
-    "id": 34,
     "title": "No Easy Way Out",
     "artist": "Robert Tepper",
     "key": "Em",
     "ugUrl": "https://tabs.ultimate-guitar.com/tab/robert-tepper/no-easy-way-out-official-3908369"
   },
   {
-    "id": 35,
+    "id": 33,
     "title": "Sakin Gelme",
     "artist": "MF\u00d6",
     "key": "",
     "ugUrl": "https://tabs.ultimate-guitar.com/tab/1407013"
   },
   {
-    "id": 36,
+    "id": 34,
     "title": "Ele Gune Karsi",
     "artist": "MF\u00d6",
     "key": "",
     "ugUrl": "https://tabs.ultimate-guitar.com/tab/1407012"
   },
   {
-    "id": 37,
+    "id": 35,
     "title": "Every Breath You Take",
     "artist": "The Police",
     "key": "Ab",
